@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro
+
+jobs:
+  test:
+    name: Test NavigationKit
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.app
+
+      # Package.swift sits next to Navigator.xcworkspace, and xcodebuild always
+      # prefers an adjacent workspace over treating the directory as a standalone
+      # SwiftPM package. Testing the library on its own (decoupled from the example
+      # app) requires running from a copy that doesn't contain the workspace.
+      - name: Copy package sources
+        run: |
+          mkdir -p /tmp/navigationkit-package
+          cp -R Package.swift Sources Tests /tmp/navigationkit-package/
+
+      - name: Run tests
+        working-directory: /tmp/navigationkit-package
+        run: |
+          xcodebuild test \
+            -scheme NavigationKit-Package \
+            -destination "$DESTINATION"
+
+  build-example:
+    name: Build ShowCaseApp example
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.app
+
+      - name: Build example app
+        run: |
+          xcodebuild build \
+            -workspace Navigator.xcworkspace \
+            -scheme ShowCaseApp \
+            -destination "$DESTINATION"
+
+  docs:
+    name: Build documentation
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_27.app
+
+      - name: Copy package sources
+        run: |
+          mkdir -p /tmp/navigationkit-package
+          cp -R Package.swift Sources Tests /tmp/navigationkit-package/
+
+      - name: Build DocC documentation
+        working-directory: /tmp/navigationkit-package
+        run: |
+          xcodebuild docbuild \
+            -scheme NavigationKit-Package \
+            -destination "$DESTINATION"
