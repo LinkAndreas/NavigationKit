@@ -1,0 +1,30 @@
+// swift-tools-version: 6.4
+
+import PackageDescription
+
+let package = Package(
+    name: "Discover",
+    platforms: [
+        .iOS(.v27),
+    ],
+    products: [
+        .library(
+            name: "Discover",
+            targets: ["Discover"]
+        ),
+    ],
+    dependencies: [
+        .package(name: "NavigationKit", path: "../../../../../")
+    ],
+    targets: [
+        .target(
+            name: "Discover",
+            dependencies: [
+                .product(name: "NavigationKit", package: "NavigationKit")
+            ],
+            swiftSettings: [
+                .enableUpcomingFeature("ApproachableConcurrency"),
+            ],
+        ),
+    ]
+)
