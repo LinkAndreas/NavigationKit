@@ -21,7 +21,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run tests
-        run: swift test
+        run: |
+          xcodebuild test \
+            -scheme NavigationKit-Package \
+            -destination 'platform=iOS Simulator,name=iPhone 17'
 
   build-example:
     name: Build ShowCaseApp example

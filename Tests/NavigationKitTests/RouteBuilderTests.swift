@@ -20,7 +20,7 @@ func routeBuilderRegistersAndResolvesViews() async throws {
     
     // Resolve the route
     let route = AnyRoute(MockRoute(id: "1"))
-    let anyView = sut.view(for: route, navigator: navigator)
+    let _ = sut.view(for: route, navigator: navigator)
     
     // In SwiftUI, we can't easily assert the contents of AnyView without reflection or UI tests.
     // Since AnyView is a value type and not optional, we just check that we can create it.
@@ -38,7 +38,7 @@ func routeBuilderResolvesUnregisteredRoutesWithFallback() async throws {
     let navigator = StackNavigator(root: UnregisteredRoute(id: "1"))
     
     let route = AnyRoute(UnregisteredRoute(id: "1"))
-    let anyView = sut.view(for: route, navigator: navigator)
+    let _ = sut.view(for: route, navigator: navigator)
     
     // Since AnyView is a struct, it's non-optional. Just producing it without crashing is the minimal test here.
 }
