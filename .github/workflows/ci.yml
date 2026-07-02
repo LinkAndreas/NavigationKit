@@ -11,26 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro
+  DESTINATION: platform=iOS Simulator,name=iPhone 17
 
 jobs:
   test:
     name: Test NavigationKit
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Run tests
         run: |
           xcodebuild test \
             -scheme NavigationKit-Package \
-            -destination 'platform=iOS Simulator,name=iPhone 17'
+            -destination "$DESTINATION"
 
   build-example:
     name: Build ShowCaseApp example
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build example app
         run: |
@@ -43,7 +43,7 @@ jobs:
     name: Build documentation
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build DocC documentation
         run: |
