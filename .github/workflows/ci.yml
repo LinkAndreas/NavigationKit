@@ -20,9 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_27.app
-
       # Package.swift sits next to Navigator.xcworkspace, and xcodebuild always
       # prefers an adjacent workspace over treating the directory as a standalone
       # SwiftPM package. Testing the library on its own (decoupled from the example
@@ -45,9 +42,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_27.app
-
       - name: Build example app
         run: |
           xcodebuild build \
@@ -60,9 +54,6 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode_27.app
 
       - name: Copy package sources
         run: |
