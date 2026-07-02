@@ -1,45 +1,45 @@
-# NavigationKit
+<div align="center">
+  <img src="Documentation/logo.png" alt="NavigationKit Logo" width="100%" />
 
-A data-driven navigation framework for SwiftUI. `NavigationKit` models your app's entire
-navigation hierarchy — stacks, tabs, split views, sheets, full-screen covers, alerts, and
-confirmation dialogs — as plain, observable, serializable state, so screens never reach for
-`NavigationLink`, `.sheet`, or `.fullScreenCover` directly.
+  # NavigationKit
 
-```swift
-let navigator = StackNavigator(root: HomeRoute())
-navigator.push(ProfileRoute(id: "123"))
-navigator.presentSheet(SettingsRoute())
-```
+  **A data-driven navigation framework for SwiftUI.**
 
-## Why
+  [![CI Status](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml/badge.svg)](https://github.com/linkandreas/NavigationKit/actions)
+  [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138.svg)](https://swift.org)
+  [![iOS 27.0+](https://img.shields.io/badge/iOS-27.0%2B-blue.svg)](https://apple.com/ios)
+  [![Swift Package Manager](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Vanilla SwiftUI navigation modifiers couple a view to the navigation action that presents it.
-That makes deep linking, state restoration, previews, and testing harder than they need to be.
-`NavigationKit` instead gives you:
+</div>
 
-- **One state machine per shape, not one for everything.** `StackNavigator`, `TabsNavigator`,
-  and `SplitNavigator` are separate `@Observable` classes, each owning only the state its shape
-  needs — no dead properties, no `kind` flag to check. `RootNavigator` is a thin enum over the
-  three, used only where a caller genuinely doesn't know the shape yet. SwiftUI re-renders from
-  them automatically — no bindings to wire by hand.
-- **Type-erased, `Hashable` routes.** Define routes as plain `Hashable` values per feature;
-  `AnyRoute` lets `NavigationKit` store them in a single heterogeneous path.
-- **A decoupled view registry.** `RouteBuilder` maps route types to views, so a feature module
-  can register its routes without the navigation layer needing to import that feature.
-- **Deep linking built in.** `DeeplinkResolver` turns a `URL` into a `NavigationState` snapshot;
-  `applyDeepLink` replays it onto a live `RootNavigator`.
-- **Snapshot-based state restoration.** `StackState` / `TabsState` / `SplitState` describe a
-  navigation tree as data, so you can persist it, restore it, or build it for a deep link
-  without touching live views.
-- **A built-in debugger.** `NavigationKitDebug` overlays a live, inspectable graph of the
-  navigation tree on top of your running app.
+---
 
-## Requirements
+`NavigationKit` models your app's entire navigation hierarchy — stacks, tabs, split views, sheets, full-screen covers, alerts, and confirmation dialogs — as plain, observable, serializable state, so screens never reach for `NavigationLink`, `.sheet`, or `.fullScreenCover` directly.
 
-- iOS 27.0+
-- Swift 6.4+ (Xcode 27+)
+## 💡 What issues does it solve?
 
-## Installation
+Vanilla SwiftUI navigation modifiers couple a view to the navigation action that presents it. This approach makes deep linking, state restoration, previews, and testing harder than they need to be.
+
+`NavigationKit` takes a radically different approach to solve these pain points:
+
+- **True Decoupling:** Defines routes as plain `Hashable` values. A decoupled view registry maps route types to views, meaning a feature module can register its routes without the navigation layer needing to import that feature.
+- **State-Driven First:** One state machine per shape (`StackNavigator`, `TabsNavigator`, and `SplitNavigator`). They are separate `@Observable` classes, meaning SwiftUI re-renders from them automatically — no bindings to wire by hand.
+- **Out-of-the-box Deep Linking:** Turns a `URL` into a `NavigationState` snapshot using `DeeplinkResolver`, which can be seamlessly applied to your live navigator.
+- **Snapshot-based State Restoration:** Describes a navigation tree as data, so you can persist it, restore it, or build it for a deep link without ever touching live views.
+- **Visual Debugging:** Includes a built-in `NavigationKitDebug` debugger that overlays a live, inspectable graph of the navigation tree on top of your running app.
+
+---
+
+## 🛠 Requirements
+
+- **iOS** 27.0+
+- **Swift** 6.4+
+- **Xcode** 27+
+
+---
+
+## 🚀 Installation
 
 ### Swift Package Manager
 
@@ -66,9 +66,11 @@ Then add the product(s) you need to your target:
 
 Or, in Xcode: **File ▸ Add Package Dependencies…** and paste the repository URL.
 
-## Quick start
+---
 
-### 1. Define routes
+## 📖 Quick Start
+
+### 1. Define Routes
 
 Routes are just `Hashable` values — typically an enum per feature.
 
@@ -79,7 +81,9 @@ enum HomeRoute: Hashable {
 }
 ```
 
-### 2. Register views for those routes
+### 2. Register Views
+
+Map your features to their specific views via a registry.
 
 ```swift
 let routeBuilder = RouteBuilder()
@@ -93,7 +97,9 @@ routeBuilder.register(HomeRoute.self) { route, navigator in
 }
 ```
 
-### 3. Create a navigator and render it
+### 3. Create & Render Navigator
+
+Initialize your navigator with a root route.
 
 ```swift
 struct ContentView: View {
@@ -106,7 +112,9 @@ struct ContentView: View {
 }
 ```
 
-### 4. Navigate from anywhere that holds a `StackNavigator`
+### 4. Navigate from Anywhere
+
+Any screen that holds the navigator can push, pop, or present seamlessly.
 
 ```swift
 navigator.push(HomeRoute.profile(id: "123"))
@@ -114,12 +122,9 @@ navigator.pop()
 navigator.popToRoot()
 ```
 
-`NavigationContainer` takes a `RootNavigator` — `.stack`, `.tabs`, or `.split` — and switches on
-it to render a stack-driven `NavigationStack`, a tab-driven `TabView`, or a split-driven
-`NavigationSplitView`, recursively, for as many nested levels as your app needs (tabs
-containing stacks, split columns containing stacks, sheets containing their own stacks, etc.).
+---
 
-## Guides
+## 📚 Documentation & Guides
 
 - [Stacks, Tabs & Split Views](Documentation/StacksAndTabs.md) — building navigation hierarchies, tab containers, split views, nested navigators.
 - [Modals](Documentation/Modals.md) — sheets, full screen covers, alerts, confirmation dialogs, error presentation.
@@ -127,45 +132,84 @@ containing stacks, split columns containing stacks, sheets containing their own 
 - [State Snapshots & Restoration](Documentation/StateSnapshots.md) — `StackState`, `TabsState`, `SplitState`, and each navigator's `apply(_:)`.
 - [Debugging](Documentation/Debugging.md) — the `NavigationKitDebug` overlay.
 
-Full API reference is available as a DocC catalog — see [Documentation.docc](Sources/NavigationKit/Documentation.docc) below.
+Full API reference is available as a DocC catalog — see [Documentation.docc](Sources/NavigationKit/Documentation.docc).
 
-## Example app
+---
 
-[`Examples/ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises
-the whole framework: an adaptive root navigator, per-feature Swift packages each registering
-their own routes, modal sheets that host their own nested stacks, and deep links that select a
-tab and push a path in one step. Open `Navigator.xcworkspace` and run the `ShowCaseApp` scheme.
+## 🧩 Example App
 
-The root navigator's shape adapts to the device: a tab bar on iPhone, a sidebar + detail split
-view on iPad — the same four features and routes drive both.
+[`Examples/ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `Navigator.xcworkspace` and run the `ShowCaseApp` scheme. 
 
-```swift
-// Examples/ShowCaseApp/AppContext.swift
-if isSplit {
-    let split = SplitNavigator(
-        sidebar: StackNavigator(root: AppSidebarRoute.menu),
-        detail: appTabItems[0].makeNavigator(),
-        columnVisibility: .all
-    )
-    navigator = .split(split)
-} else {
-    navigator = .tabs(TabsNavigator(
-        tabs: appTabItems.map {
-            TabsNavigator.Tab(id: $0.id, title: $0.title, systemImage: $0.systemImage, navigator: $0.makeNavigator())
-        },
-        selection: AppTab.discover
-    ))
-}
+Highlights:
+- Adaptive root navigator (tab bar on iPhone, sidebar + detail split view on iPad).
+- Per-feature Swift packages registering their own routes.
+- Modal sheets hosting nested stacks.
+- Deep links resolving into a selected tab and path simultaneously.
+
+---
+
+## 🏗 Architecture Overview
+
+Curious how `NavigationKit` handles everything under the hood? Here's a high-level overview.
+
+### The Navigation Core
+
+```mermaid
+classDiagram
+    class NavigationContainer {
+        +navigator: RootNavigator
+        +routeBuilder: RouteBuilder
+    }
+    class RootNavigator {
+        <<enumeration>>
+        +stack(StackNavigator)
+        +tabs(TabsNavigator)
+        +split(SplitNavigator)
+    }
+    class StackNavigator {
+        +path: [AnyRoute]
+        +push()
+        +pop()
+    }
+    class RouteBuilder {
+        +register(Route.Type)
+        +build(Route) -> AnyView
+    }
+
+    NavigationContainer --> RootNavigator : Render based on shape
+    NavigationContainer --> RouteBuilder : Resolves Views
+    RootNavigator ..> StackNavigator : Manages State
+    StackNavigator --> RouteBuilder : Queries View
 ```
 
-## Modules
+### Route Registration Flow
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant Builder as RouteBuilder
+    participant Feature as Feature Module (HomeRoute)
+    participant Nav as NavigationContainer
+    
+    App->>Builder: Initialize Registry
+    App->>Feature: register(HomeRoute)
+    Feature->>Builder: Map HomeRoute to FeatureViews
+    App->>Nav: Inject Navigator & Registry
+    Note over Nav, Feature: App is now ready to navigate.
+    Nav->>Builder: User navigates -> Resolve `HomeRoute.profile`
+    Builder-->>Nav: Returns `ProfileScreen`
+```
+
+---
+
+## 🤝 Modules
 
 | Target | Purpose |
 | --- | --- |
 | `NavigationKit` | Core framework: `StackNavigator`/`TabsNavigator`/`SplitNavigator`, route registry, deep linking, state snapshots, modal presentation. |
 | `NavigationKitDebug` | Optional floating overlay window that visualizes the live navigation graph. Intended for DEBUG builds only. |
 
-## Testing
+## 🧪 Testing
 
 ```bash
 xcodebuild test \
@@ -173,12 +217,10 @@ xcodebuild test \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up the
-project, run the test suite, and submit changes. Please also read the
-[Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up the project, run the test suite, and submit changes. Please also read the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## License
+## 📄 License
 
 `NavigationKit` is released under the MIT license. See [LICENSE](LICENSE) for details.
