@@ -6,7 +6,7 @@ extension View {
     /// - Parameter spec: A binding to an optional `AlertSpec`. When non-nil, the alert is presented.
     @ViewBuilder
     func alert(spec: Binding<AlertSpec?>) -> some View {
-        if #available(iOS 27.0, macOS 27.0, *) {
+        if #available(iOS 27.0, *) {
             alert(
                 spec.wrappedValue?.title ?? "",
                 item: spec
@@ -45,7 +45,7 @@ extension View {
         error: Binding<(any Error)?>,
         retry: (() -> Void)?
     ) -> some View {
-        if #available(iOS 27.0, macOS 27.0, *) {
+        if #available(iOS 27.0, *) {
             alert(error: error) { _ in
                 if let retry {
                     Button("Retry") { retry() }
