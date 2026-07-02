@@ -6,7 +6,8 @@
 
   [![CI Status](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml/badge.svg)](https://github.com/linkandreas/NavigationKit/actions)
   [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138.svg)](https://swift.org)
-  [![iOS 27.0+](https://img.shields.io/badge/iOS-27.0%2B-blue.svg)](https://apple.com/ios)
+  [![iOS 26.0+](https://img.shields.io/badge/iOS-26.0%2B-blue.svg)](https://apple.com/ios)
+  [![macOS 26.0+](https://img.shields.io/badge/macOS-26.0%2B-blue.svg)](https://apple.com/macos)
   [![Swift Package Manager](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -32,7 +33,8 @@ Vanilla SwiftUI navigation modifiers couple a view to the navigation action that
 
 ## 🛠 Requirements
 
-- **iOS** 27.0+
+- **iOS** 26.0+
+- **macOS** 26.0+
 - **Swift** 6.4+
 - **Xcode** 27+
 
