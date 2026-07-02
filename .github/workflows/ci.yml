@@ -37,7 +37,10 @@ jobs:
           xcodebuild build \
             -project Examples/ShowCaseApp/ShowCaseApp.xcodeproj \
             -scheme ShowCaseApp \
-            -platform ios
+            -platform ios \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
   docs:
     name: Build documentation
