@@ -63,6 +63,10 @@ jobs:
             ./.derivedData/Build/Products/Debug-iphonesimulator/NavigationKit.doccarchive \
             --output-path ./docs \
             --hosting-base-path NavigationKit
+            
+          # Fix DocC root routing for GitHub Pages
+          cp ./docs/index.html ./docs/404.html
+          echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=documentation/navigationkit"></head><body></body></html>' > ./docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
