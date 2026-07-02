@@ -7,15 +7,15 @@ struct NotificationsScreen: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Conference Updates")) {
+            Section(header: Text("conference_updates")) {
                 Toggle("Push Notifications", isOn: $pushNotifications)
                 Toggle("Email Notifications", isOn: $emailNotifications)
             }
             
-            Section(header: Text("Offers & Promotions"), footer: Text("Receive occasional emails about future events and partner offers.")) {
+            Section(header: Text("offers_promotions"), footer: Text("receive_occasional_emails_about_future_e")) {
                 Toggle("Marketing Emails", isOn: $marketingEmails)
             }
         }
-        .navigationTitle("Notifications")
+        .navigationTitle("notifications")
     }
 }

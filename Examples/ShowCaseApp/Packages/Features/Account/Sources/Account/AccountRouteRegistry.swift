@@ -28,7 +28,7 @@ public enum AccountRouteBuilder {
                                     AlertSpec.Button("Log out", role: .destructive) {
                                         navigator.dismiss()
                                     },
-                                    AlertSpec.Button("Cancel", role: .cancel)]
+                                    AlertSpec.Button("cancel", role: .cancel)]
                             )
                         )
                     },
@@ -67,7 +67,7 @@ public enum AccountRouteBuilder {
                                         // mock delete and logout
                                         navigator.popToRoot()
                                     },
-                                    AlertSpec.Button("Cancel", role: .cancel)
+                                    AlertSpec.Button("cancel", role: .cancel)
                                 ]
                             )
                         )

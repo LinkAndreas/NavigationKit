@@ -17,11 +17,25 @@ import Observation
 @MainActor
 public final class TabsNavigator: ModalPresenter, Identifiable {
     public struct Tab: Identifiable {
+        /// The unique, type-erased identifier for this tab.
         public let id: AnyHashable
+        
+        /// The localized title string for this tab.
         public let title: String
+        
+        /// The SF Symbol image name for this tab's icon.
         public let systemImage: String
+        
+        /// The isolated stack navigator that drives the navigation hierarchy inside this tab.
         public let navigator: StackNavigator
 
+        /// Creates a new tab.
+        ///
+        /// - Parameters:
+        ///   - id: A unique `Hashable` identifier for the tab.
+        ///   - title: The title string (will be resolved as a `LocalizedStringKey` in the UI).
+        ///   - systemImage: The SF Symbol name for the tab icon.
+        ///   - navigator: The `StackNavigator` managing this tab's internal hierarchy.
         public init<ID: Hashable>(
             id: ID,
             title: String,
@@ -35,11 +49,20 @@ public final class TabsNavigator: ModalPresenter, Identifiable {
         }
     }
 
+    /// The array of tabs hosted by this navigator.
     public internal(set) var tabs: [Tab]
+    
+    /// The `id` of the currently selected tab.
     public var selection: AnyHashable?
+    
+    /// The composed modal-presentation state (sheet, full screen cover, alert, etc.).
     public var modals = ModalBox()
 
     /// Creates a tabbed navigator hosting `tabs`.
+    ///
+    /// - Parameters:
+    ///   - tabs: An array of ``Tab`` instances defining the interface.
+    ///   - selection: The optional `id` of the tab to select initially. Defaults to the first tab.
     public init<ID: Hashable>(tabs: [Tab], selection: ID? = nil) {
         self.tabs = tabs
         if let selection {
@@ -49,7 +72,11 @@ public final class TabsNavigator: ModalPresenter, Identifiable {
         }
     }
 
-    public var presentableChildren: [any ModalPresenter] { tabs.map(\.navigator) }
+    /// Returns the internal stack navigators of all tabs so that modal dismissals can
+    /// recursively cascade down the navigation hierarchy.
+    public var presentableChildren: [any ModalPresenter] {
+        tabs.map(\.navigator)
+    }
 
     // MARK: - Tab selection
 

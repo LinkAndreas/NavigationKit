@@ -10,10 +10,16 @@ import Foundation
 /// checked ad hoc at each call site.
 @MainActor
 public enum RootNavigator: Identifiable {
+    /// A linear navigation stack wrapping a ``StackNavigator``.
     case stack(StackNavigator)
+    
+    /// A multi-root tabbed interface wrapping a ``TabsNavigator``.
     case tabs(TabsNavigator)
+    
+    /// A multi-column iPad-style split interface wrapping a ``SplitNavigator``.
     case split(SplitNavigator)
 
+    /// A unique identifier derived from the underlying wrapped navigator instance.
     public nonisolated var id: ObjectIdentifier {
         switch self {
         case let .stack(navigator): navigator.id

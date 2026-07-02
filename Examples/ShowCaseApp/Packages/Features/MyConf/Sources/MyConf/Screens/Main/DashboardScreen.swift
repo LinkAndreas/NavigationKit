@@ -6,12 +6,12 @@ public struct DashboardScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Dashboard").font(.title)
-            Button("Apply for Reward", action: onApplyForRewardTapped)
-            Button("Submit Activity", action: onSubmitActivityTapped)
+            Text("dashboard").font(.title)
+            Button("apply_for_reward", action: onApplyForRewardTapped)
+            Button("submit_activity", action: onSubmitActivityTapped)
         }
         .padding()
-        .navigationTitle("Dashboard")
+        .navigationTitle("dashboard")
     }
 }
 

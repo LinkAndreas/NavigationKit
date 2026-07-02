@@ -5,11 +5,11 @@ public struct ProjectCategorySelectionScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Activity Selection").font(.title)
-            Button("Next: Additional Register Form", action: onNextTapped)
+            Text("activity_selection").font(.title)
+            Button("next_additional_register_form", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Activities")
+        .navigationTitle("activities")
     }
 }
 

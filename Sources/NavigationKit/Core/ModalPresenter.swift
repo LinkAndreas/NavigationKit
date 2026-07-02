@@ -17,29 +17,57 @@ public protocol ModalPresenter: AnyObject {
 }
 
 public extension ModalPresenter {
+    /// Returns the children of this navigator, allowing recursive operations like dismissing all modals.
+    /// By default, navigators have no children (an empty array).
     var presentableChildren: [any ModalPresenter] { [] }
 
+    /// Presents a given route as a modal sheet.
+    ///
+    /// - Parameter route: The `Hashable` route representing the destination to present.
+    ///
+    /// Internally, this wraps the route in a new `StackNavigator` and assigns it to `modals.sheet`.
     func present<R: Hashable>(sheet route: R) {
         let navigator = StackNavigator(root: route)
         navigator.modals.presentedBy = self
         modals.sheet = navigator
     }
 
+    /// Presents a given route as a full-screen cover.
+    ///
+    /// - Parameter route: The `Hashable` route representing the destination to present.
+    ///
+    /// Internally, this wraps the route in a new `StackNavigator` and assigns it to `modals.fullScreenCover`.
     func present<R: Hashable>(fullScreenCover route: R) {
         let navigator = StackNavigator(root: route)
         navigator.modals.presentedBy = self
         modals.fullScreenCover = navigator
     }
 
+    /// Presents a native SwiftUI alert.
+    ///
+    /// - Parameter a: An `AlertSpec` defining the alert's title, message, and buttons.
     func present(alert a: AlertSpec) { modals.alert = a }
 
+    /// Presents a native SwiftUI error alert.
+    ///
+    /// - Parameters:
+    ///   - error: The `Error` to display.
+    ///   - retry: An optional closure to execute if the user taps "Retry".
     func present(error: any Error, retry: (() -> Void)? = nil) {
         modals.errorRetry = retry
         modals.error = error
     }
 
+    /// Presents a native SwiftUI confirmation dialog (action sheet).
+    ///
+    /// - Parameter d: A `ConfirmationDialogSpec` defining the dialog's title, message, and buttons.
     func present(confirmationDialog d: ConfirmationDialogSpec) { modals.confirmationDialog = d }
 
+    /// Dismisses any currently presented modal (sheet, full-screen cover, alert, or confirmation dialog).
+    ///
+    /// If this navigator was presented by another navigator, it recursively climbs the hierarchy and
+    /// asks the root presenting navigator to dismiss all modals. It also cascades the dismissal command
+    /// to any `presentableChildren`.
     func dismissAllModals() {
         if let presentedBy = modals.presentedBy {
             presentedBy.dismissAllModals()

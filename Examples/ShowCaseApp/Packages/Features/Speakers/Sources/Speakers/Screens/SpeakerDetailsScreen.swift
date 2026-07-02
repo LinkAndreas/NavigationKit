@@ -26,7 +26,7 @@ struct SpeakerDetailsScreen: View {
                         Text(speaker.name)
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                        Text("\(speaker.role), \(speaker.company)")
+                        Text("role_company")
                             .font(.headline)
                             .foregroundColor(.secondary)
                     }
@@ -46,7 +46,7 @@ struct SpeakerDetailsScreen: View {
                         }) {
                             HStack {
                                 Image(systemName: "envelope.fill")
-                                Text("Contact Speaker")
+                                Text("contact_speaker")
                                 Spacer()
                             }
                             .padding()
@@ -63,7 +63,7 @@ struct SpeakerDetailsScreen: View {
                         }) {
                             HStack {
                                 Image(systemName: "calendar.badge.clock")
-                                Text("View Upcoming Sessions")
+                                Text("view_upcoming_sessions")
                                 Spacer()
                                 Image(systemName: "chevron.right")
                             }
@@ -80,7 +80,7 @@ struct SpeakerDetailsScreen: View {
             .navigationTitle(speaker.name)
             .navigationBarTitleDisplayMode(.inline)
         } else {
-            Text("Speaker not found")
+            Text("speaker_not_found")
         }
     }
 }

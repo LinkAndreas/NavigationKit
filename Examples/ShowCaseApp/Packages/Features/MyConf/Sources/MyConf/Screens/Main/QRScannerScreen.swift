@@ -8,7 +8,7 @@ public struct QRScannerScreen: View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 32) {
-                    Text("Point your camera at a QR Code")
+                    Text("point_your_camera_at_a_qr_code")
                         .font(.headline)
                         .foregroundColor(.white)
                     
@@ -28,11 +28,11 @@ public struct QRScannerScreen: View {
                 }
                 .padding(.top, 40)
             }
-            .navigationTitle("Scan QR Code")
+            .navigationTitle("scan_qr_code")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onDismissTapped)
+                    Button("cancel", action: onDismissTapped)
                         .foregroundColor(.white)
                 }
             }

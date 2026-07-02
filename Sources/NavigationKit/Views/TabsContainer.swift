@@ -12,7 +12,7 @@ import SwiftUI
     var body: some View {
         TabView(selection: $navigator.selection) {
             ForEach(navigator.tabs) { tab in
-                Tab(tab.title, systemImage: tab.systemImage, value: tab.id) {
+                Tab(LocalizedStringKey(tab.title), systemImage: tab.systemImage, value: tab.id) {
                     NavigationContainer(
                         navigator: .stack(tab.navigator),
                         routeBuilder: routeBuilder

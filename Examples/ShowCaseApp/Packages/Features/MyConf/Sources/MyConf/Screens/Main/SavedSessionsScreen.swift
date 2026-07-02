@@ -25,14 +25,14 @@ public struct SavedSessionsScreen: View {
     public var body: some View {
         List {
             if sessions.isEmpty {
-                Text("No saved sessions yet.")
+                Text("no_saved_sessions_yet")
                     .foregroundColor(.secondary)
             } else {
                 ForEach(sessions) { session in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(session.title)
                             .font(.headline)
-                        Text("\(session.time) • \(session.room)")
+                        Text("time_room")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -48,6 +48,6 @@ public struct SavedSessionsScreen: View {
                 }
             }
         }
-        .navigationTitle("Saved Sessions")
+        .navigationTitle("saved_sessions")
     }
 }

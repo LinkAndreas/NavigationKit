@@ -21,11 +21,11 @@ public struct EventDetailsScreen: View {
                 .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("WWDC 2026")
+                    Text("wwdc_2026")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                     
-                    Text("Cupertino, California")
+                    Text("cupertino_california")
                         .font(.title3)
                         .foregroundColor(.secondary)
                     
@@ -34,25 +34,25 @@ public struct EventDetailsScreen: View {
                     HStack {
                         Image(systemName: "calendar")
                             .foregroundColor(.purple)
-                        Text("June 8 - June 12, 2026")
+                        Text("june_8_june_12_2026")
                             .font(.headline)
                     }
                     
                     HStack {
                         Image(systemName: "ticket.fill")
                             .foregroundColor(.purple)
-                        Text("Registration Open")
+                        Text("registration_open")
                             .font(.headline)
                     }
                     
                     Divider()
                     
-                    Text("About the Event")
+                    Text("about_the_event")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .padding(.top, 8)
                     
-                    Text("Join developers from around the world for an exhilarating week of technology and innovation. Get a first look at Apple’s latest software, learn from Apple engineers, and connect with the global developer community.")
+                    Text("join_developers_from_around_the_world_fo")
                         .foregroundColor(.secondary)
                         .lineSpacing(4)
                 }
@@ -60,7 +60,7 @@ public struct EventDetailsScreen: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Event Details")
+        .navigationTitle("event_details")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

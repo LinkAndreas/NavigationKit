@@ -8,14 +8,14 @@ public struct TeamDetailsFormScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Additional Register Form").font(.title)
-            Button("Document Form Flow", action: onDocumentFlowTapped)
-            Button("Service Provider Form Flow", action: onServiceProviderFlowTapped)
-            Button("Document OR Service Provider Flow", action: onDocumentOrServiceProviderFlowTapped)
-            Button("Document AND Service Provider Flow", action: onDocumentAndServiceProviderFlowTapped)
+            Text("additional_register_form").font(.title)
+            Button("document_form_flow", action: onDocumentFlowTapped)
+            Button("service_provider_form_flow", action: onServiceProviderFlowTapped)
+            Button("document_or_service_provider_flow", action: onDocumentOrServiceProviderFlowTapped)
+            Button("document_and_service_provider_flow", action: onDocumentAndServiceProviderFlowTapped)
         }
         .padding()
-        .navigationTitle("Additional Register")
+        .navigationTitle("additional_register")
     }
 }
 

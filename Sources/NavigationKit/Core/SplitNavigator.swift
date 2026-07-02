@@ -16,10 +16,19 @@ import Observation
 @Observable
 @MainActor
 public final class SplitNavigator: ModalPresenter, Identifiable {
+    /// The navigator driving the primary sidebar column.
     public internal(set) var sidebar: StackNavigator
+    
+    /// The navigator driving the optional middle content column (used in three-column layouts).
     public internal(set) var content: StackNavigator?
+    
+    /// The navigator driving the detail column.
     public internal(set) var detail: StackNavigator
+    
+    /// The current visibility configuration for the split view's columns.
     public var columnVisibility: SplitVisibility = .automatic
+    
+    /// The composed modal-presentation state (sheet, full screen cover, alert, etc.).
     public var modals = ModalBox()
 
     /// Creates a split navigator hosting a sidebar, an optional content column, and a detail column.
@@ -41,6 +50,8 @@ public final class SplitNavigator: ModalPresenter, Identifiable {
         self.columnVisibility = columnVisibility
     }
 
+    /// Returns the active child navigators (sidebar, content, and detail) so that modal 
+    /// dismissals can recursively cascade down the navigation hierarchy.
     public var presentableChildren: [any ModalPresenter] {
         [sidebar, content, detail].compactMap { $0 }
     }

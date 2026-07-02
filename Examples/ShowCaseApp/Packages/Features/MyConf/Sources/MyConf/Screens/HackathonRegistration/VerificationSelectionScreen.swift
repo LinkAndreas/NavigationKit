@@ -6,12 +6,12 @@ public struct VerificationSelectionScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Proof Selection").font(.title)
-            Button("Document Selection", action: onDocumentTapped)
-            Button("Service Provider Form", action: onServiceProviderTapped)
+            Text("proof_selection").font(.title)
+            Button("document_selection", action: onDocumentTapped)
+            Button("service_provider_form", action: onServiceProviderTapped)
         }
         .padding()
-        .navigationTitle("Proofs")
+        .navigationTitle("proofs")
     }
 }
 

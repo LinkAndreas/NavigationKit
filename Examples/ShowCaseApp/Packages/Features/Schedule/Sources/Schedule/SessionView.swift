@@ -37,7 +37,7 @@ struct SessionView: View {
                     .background(Color(.secondarySystemBackground))
                     .cornerRadius(12)
                     
-                    Text("Abstract")
+                    Text("abstract")
                         .font(.title2)
                         .fontWeight(.bold)
                     
@@ -46,7 +46,7 @@ struct SessionView: View {
                         .foregroundColor(.secondary)
                         .lineSpacing(4)
                     
-                    Text("Speaker")
+                    Text("speaker")
                         .font(.title2)
                         .fontWeight(.bold)
                         .padding(.top, 10)
@@ -71,7 +71,7 @@ struct SessionView: View {
                             VStack(alignment: .leading) {
                                 Text(session.speakerName)
                                     .font(.headline)
-                                Text("Tap to view profile")
+                                Text("tap_to_view_profile")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -90,7 +90,7 @@ struct SessionView: View {
                     Button {
                         onAddToMyConfTapped()
                     } label: {
-                        Text("Add to MyConf")
+                        Text("add_to_myconf")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -101,11 +101,11 @@ struct SessionView: View {
                 }
                 .padding()
             } else {
-                Text("Session not found")
+                Text("session_not_found")
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Session Details")
+        .navigationTitle("session_details")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

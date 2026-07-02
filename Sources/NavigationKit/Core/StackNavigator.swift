@@ -17,11 +17,20 @@ import Observation
 @Observable
 @MainActor
 public final class StackNavigator: ModalPresenter, Identifiable {
+    /// The root route of the navigation stack.
+    ///
+    /// The stack always contains at least this route at its base. It cannot be popped.
     public internal(set) var root: AnyRoute
+    
+    /// The array of pushed routes sitting above the root route.
     public var path: [AnyRoute] = []
+    
+    /// The composed modal-presentation state (sheet, full screen cover, alert, etc.).
     public var modals = ModalBox()
 
-    /// Creates a stack navigator rooted at `root`.
+    /// Creates a stack navigator rooted at the specified route.
+    ///
+    /// - Parameter root: The `Hashable` root route that forms the base of the stack.
     public init<R: Hashable>(root: R) {
         self.root = AnyRoute(root)
     }

@@ -6,12 +6,12 @@ public struct ProjectUploadScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Document Selection").font(.title)
-            Text("Flow: \(flow.rawValue)").font(.subheadline)
+            Text("document_selection").font(.title)
+            Text("flow_flow").font(.subheadline)
             Button(flow == .both ? "Next: Service Provider" : "Next: Summary", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Documents")
+        .navigationTitle("documents")
     }
 }
 

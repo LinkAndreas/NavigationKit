@@ -6,12 +6,12 @@ public struct TeamSizeSelectionScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Group Selection").font(.title)
-            Button("Next: Activity Selection", action: onProjectCategorySelectionTapped)
-            Button("Cancellation", action: onCancellationTapped)
+            Text("group_selection").font(.title)
+            Button("next_activity_selection", action: onProjectCategorySelectionTapped)
+            Button("cancellation", action: onCancellationTapped)
         }
         .padding()
-        .navigationTitle("Groups")
+        .navigationTitle("groups")
     }
 }
 
