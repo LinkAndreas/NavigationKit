@@ -258,9 +258,7 @@ sequenceDiagram
 ## 🧪 Testing
 
 ```bash
-xcodebuild test \
-  -scheme NavigationKit-Package \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+swift test
 ```
 
 ## 🤝 Contributing
