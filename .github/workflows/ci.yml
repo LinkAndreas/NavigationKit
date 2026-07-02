@@ -20,21 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Package.swift sits next to Navigator.xcworkspace, and xcodebuild always
-      # prefers an adjacent workspace over treating the directory as a standalone
-      # SwiftPM package. Testing the library on its own (decoupled from the example
-      # app) requires running from a copy that doesn't contain the workspace.
-      - name: Copy package sources
-        run: |
-          mkdir -p /tmp/navigationkit-package
-          cp -R Package.swift Sources Tests /tmp/navigationkit-package/
-
       - name: Run tests
-        working-directory: /tmp/navigationkit-package
-        run: |
-          xcodebuild test \
-            -scheme NavigationKit-Package \
-            -destination "$DESTINATION"
+        run: swift test
 
   build-example:
     name: Build ShowCaseApp example
@@ -45,7 +32,7 @@ jobs:
       - name: Build example app
         run: |
           xcodebuild build \
-            -workspace Navigator.xcworkspace \
+            -project Examples/ShowCaseApp/ShowCaseApp.xcodeproj \
             -scheme ShowCaseApp \
             -destination "$DESTINATION"
 
@@ -55,14 +42,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy package sources
-        run: |
-          mkdir -p /tmp/navigationkit-package
-          cp -R Package.swift Sources Tests /tmp/navigationkit-package/
-
       - name: Build DocC documentation
-        working-directory: /tmp/navigationkit-package
         run: |
-          xcodebuild docbuild \
-            -scheme NavigationKit-Package \
-            -destination "$DESTINATION"
+          swift package --allow-writing-to-directory ./docs \
+            generate-documentation --target NavigationKit \
+            --output-path ./docs \
+            --transform-for-static-hosting
