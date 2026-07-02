@@ -4,7 +4,9 @@ import PackageDescription
 
 let package = Package(
     name: "Speakers",
-    platforms: [.iOS(.v27)],
+    platforms: [
+        .iOS(.v26), .macOS(.v26)
+    ],
     products: [
         .library(
             name: "Speakers",
