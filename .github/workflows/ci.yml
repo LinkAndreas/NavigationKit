@@ -37,7 +37,7 @@ jobs:
           xcodebuild build \
             -project Examples/ShowCaseApp/ShowCaseApp.xcodeproj \
             -scheme ShowCaseApp \
-            -destination "$DESTINATION"
+            -platform ios
 
   docs:
     name: Build documentation
@@ -47,7 +47,11 @@ jobs:
 
       - name: Build DocC documentation
         run: |
-          swift package --allow-writing-to-directory ./docs \
-            generate-documentation --target NavigationKit \
+          swift package \
+           --allow-writing-to-directory ./docs \
+            generate-documentation \
+            --target NavigationKit \
             --output-path ./docs \
-            --transform-for-static-hosting
+            --transform-for-static-hosting \
+            --hosting-base-path NavigationKit \
+            --platform ios
