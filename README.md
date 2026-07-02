@@ -4,10 +4,6 @@
     <img src="Documentation/NavigationKit-editorial-light.svg" alt="NavigationKit Logo" width="100%" />
   </picture>
 
-  # NavigationKit
-
-  **A data-driven navigation framework for SwiftUI.**
-
   [![CI Status](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml/badge.svg)](https://github.com/linkandreas/NavigationKit/actions)
   [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138.svg)](https://swift.org)
   [![iOS 27.0+](https://img.shields.io/badge/iOS-27.0%2B-blue.svg)](https://apple.com/ios)
