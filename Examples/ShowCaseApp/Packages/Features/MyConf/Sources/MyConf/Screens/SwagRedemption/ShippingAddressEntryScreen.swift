@@ -6,12 +6,12 @@ public struct ShippingAddressEntryScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Reward Collector Selection").font(.title)
-            Button("Next: Invoice Data", action: onToInvoiceDataTapped)
-            Button("Skip to Summary", action: onToSummaryTapped)
+            Text("reward_collector_selection").font(.title)
+            Button("next_invoice_data", action: onToInvoiceDataTapped)
+            Button("skip_to_summary", action: onToSummaryTapped)
         }
         .padding()
-        .navigationTitle("Collectors")
+        .navigationTitle("collectors")
     }
 }
 

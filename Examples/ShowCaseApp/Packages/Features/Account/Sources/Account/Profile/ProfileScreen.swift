@@ -19,11 +19,11 @@ struct ProfileScreen: View {
                         .foregroundColor(.blue)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Jane Doe")
+                        Text("jane_doe")
                             .font(.title2)
                             .fontWeight(.semibold)
                         
-                        Text("iOS Developer @ Apple")
+                        Text("ios_developer_apple")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -31,36 +31,36 @@ struct ProfileScreen: View {
                 .padding(.vertical, 8)
             }
             
-            Section(header: Text("Account Settings")) {
+            Section(header: Text("account_settings")) {
                 Button(action: onPersonalInformationTapped) {
-                    Label("Personal Information", systemImage: "person.text.rectangle")
+                    Label("personal_information", systemImage: "person.text.rectangle")
                 }
                 
                 Button(action: onNotificationsTapped) {
-                    Label("Notifications", systemImage: "bell.badge")
+                    Label("notifications", systemImage: "bell.badge")
                 }
                 
                 Button(action: onPaymentMethodsTapped) {
-                    Label("Payment Methods", systemImage: "creditcard")
+                    Label("payment_methods", systemImage: "creditcard")
                 }
                 
                 Button(action: onSettingsTapped) {
-                    Label("General Settings", systemImage: "gear")
+                    Label("general_settings", systemImage: "gear")
                 }
             }
             
             Section {
                 Button(action: onLogoutTapped) {
-                    Text("Log Out")
+                    Text("log_out")
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
         }
-        .navigationTitle("Profile")
+        .navigationTitle("profile")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Close", action: onCloseTapped)
+                Button("close", action: onCloseTapped)
             }
         }
     }

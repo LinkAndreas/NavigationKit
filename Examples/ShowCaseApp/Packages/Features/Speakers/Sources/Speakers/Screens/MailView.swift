@@ -10,7 +10,7 @@ struct MailView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("To:")
+                Text("to")
                     .foregroundColor(.secondary)
                     .frame(width: 70, alignment: .leading)
                 Text(email)
@@ -23,7 +23,7 @@ struct MailView: View {
                 .padding(.leading, 16)
             
             HStack {
-                Text("Cc/Bcc:")
+                Text("ccbcc")
                     .foregroundColor(.secondary)
                     .frame(width: 70, alignment: .leading)
                 Spacer()
@@ -35,7 +35,7 @@ struct MailView: View {
                 .padding(.leading, 16)
             
             HStack {
-                Text("Subject:")
+                Text("subject")
                     .foregroundColor(.secondary)
                     .frame(width: 70, alignment: .leading)
                 Text(subject)
@@ -50,11 +50,11 @@ struct MailView: View {
             TextEditor(text: $messageBody)
                 .padding()
         }
-        .navigationTitle("New Message")
+        .navigationTitle("new_message")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
+                Button("cancel") {
                     onDismiss()
                 }
             }

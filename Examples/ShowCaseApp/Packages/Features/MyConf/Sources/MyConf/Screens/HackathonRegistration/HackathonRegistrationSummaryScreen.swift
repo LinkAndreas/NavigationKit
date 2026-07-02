@@ -5,10 +5,10 @@ public struct HackathonRegistrationSummaryScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Activity Submission Summary").font(.title)
-            Button("Back to Dashboard", action: onBackToDashboardTapped)
+            Text("activity_submission_summary").font(.title)
+            Button("back_to_dashboard", action: onBackToDashboardTapped)
         }
         .padding()
-        .navigationTitle("Summary")
+        .navigationTitle("summary")
     }
 }

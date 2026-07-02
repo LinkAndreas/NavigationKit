@@ -75,6 +75,6 @@ struct OverviewScreen: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Speakers")
+        .navigationTitle("speakers")
     }
 }

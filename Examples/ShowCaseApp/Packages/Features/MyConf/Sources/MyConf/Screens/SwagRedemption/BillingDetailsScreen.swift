@@ -5,11 +5,11 @@ public struct BillingDetailsScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Invoice Data Entry").font(.title)
-            Button("Next: Bank Data", action: onNextTapped)
+            Text("invoice_data_entry").font(.title)
+            Button("next_bank_data", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Invoice")
+        .navigationTitle("invoice")
     }
 }
 

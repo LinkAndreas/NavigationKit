@@ -17,7 +17,7 @@ struct AddPaymentMethodScreen: View {
     
     var body: some View {
         Form {
-            Section(header: Text("Card Details")) {
+            Section(header: Text("card_details")) {
                 TextField("Name on Card", text: $cardName)
                 TextField("Card Number", text: $cardNumber)
                     .keyboardType(.numberPad)
@@ -62,14 +62,14 @@ struct AddPaymentMethodScreen: View {
                 }
             }
         }
-        .navigationTitle("Add Card")
+        .navigationTitle("add_card")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel", action: onCancelTapped)
+                Button("cancel", action: onCancelTapped)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
+                Button("save") {
                     let lastFour = cardNumber.count >= 4 ? String(cardNumber.suffix(4)) : "1234"
                     let type: PaymentMethod.CardType = cardNumber.starts(with: "4") ? .visa : .mastercard
                     

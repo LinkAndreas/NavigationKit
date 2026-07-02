@@ -5,11 +5,11 @@ public struct SwagSelectionScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Reward Selection").font(.title)
-            Button("Next: Reward Collector Selection", action: onNextTapped)
+            Text("reward_selection").font(.title)
+            Button("next_reward_collector_selection", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Rewards")
+        .navigationTitle("rewards")
     }
 }
 

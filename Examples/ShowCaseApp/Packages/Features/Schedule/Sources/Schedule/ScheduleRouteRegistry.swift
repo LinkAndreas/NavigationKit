@@ -43,7 +43,7 @@ public enum ScheduleRouteBuilder {
                                 title: "Added to MyConf",
                                 message: "This session has been saved to your personal schedule.",
                                 buttons: [
-                                    AlertSpec.Button("View Saved Sessions") {
+                                    AlertSpec.Button("view_saved_sessions") {
                                         if let url = URL(string: "navigator://myconf/savedSessions") {
                                             UIApplication.shared.open(url)
                                         }

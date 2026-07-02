@@ -6,12 +6,12 @@ public struct RepositoryLinkEntryScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Service Provider Form").font(.title)
-            Text("Flow: \(flow.rawValue)").font(.subheadline)
-            Button("Next: Summary", action: onNextTapped)
+            Text("service_provider_form").font(.title)
+            Text("flow_flow").font(.subheadline)
+            Button("next_summary", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Service Provider")
+        .navigationTitle("service_provider")
     }
 }
 

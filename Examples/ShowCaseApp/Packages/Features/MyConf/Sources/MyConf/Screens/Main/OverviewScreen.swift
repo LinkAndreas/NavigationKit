@@ -17,7 +17,7 @@ public struct OverviewScreen: View {
                     
                     VStack(spacing: 16) {
                         HStack {
-                            Text("WWDC 2026")
+                            Text("wwdc_2026")
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
@@ -31,10 +31,10 @@ public struct OverviewScreen: View {
                         
                         HStack {
                             VStack(alignment: .leading) {
-                                Text("Attendee")
+                                Text("attendee")
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.8))
-                                Text("Andreas Link")
+                                Text("andreas_link")
                                     .font(.title2)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
@@ -59,7 +59,7 @@ public struct OverviewScreen: View {
                     Button(action: onSavedSessionsTapped) {
                         HStack {
                             Image(systemName: "bookmark.fill")
-                            Text("My Saved Sessions")
+                            Text("my_saved_sessions")
                             Spacer()
                             Image(systemName: "chevron.right")
                         }
@@ -71,7 +71,7 @@ public struct OverviewScreen: View {
                     Button(action: onScanQRCodeTapped) {
                         HStack {
                             Image(systemName: "qrcode.viewfinder")
-                            Text("Scan QR Code")
+                            Text("scan_qr_code")
                             Spacer()
                             Image(systemName: "chevron.right")
                         }
@@ -84,6 +84,6 @@ public struct OverviewScreen: View {
                 .buttonStyle(.plain)
             }
         }
-        .navigationTitle("MyConf")
+        .navigationTitle("myconf")
     }
 }

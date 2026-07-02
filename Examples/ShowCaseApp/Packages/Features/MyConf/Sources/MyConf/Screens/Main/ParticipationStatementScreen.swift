@@ -5,11 +5,11 @@ public struct ParticipationStatementScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Participation Statement").font(.title)
-            Button("Join", action: onJoinTapped)
+            Text("participation_statement").font(.title)
+            Button("join", action: onJoinTapped)
         }
         .padding()
-        .navigationTitle("Participation")
+        .navigationTitle("participation")
     }
 }
 

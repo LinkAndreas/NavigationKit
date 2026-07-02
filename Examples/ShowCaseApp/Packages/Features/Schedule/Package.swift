@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Schedule",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v26)
     ],

@@ -12,7 +12,7 @@ import SwiftUI
 /// WithContext(id: offset) {
 ///     ViewModel(offset: offset)
 /// } content: { viewModel in
-///     Text("Offset: \(viewModel.offset)")
+///     Text("offset_offset")
 /// }
 /// ```
 ///

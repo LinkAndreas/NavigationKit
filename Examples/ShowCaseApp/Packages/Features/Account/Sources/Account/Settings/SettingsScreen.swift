@@ -11,33 +11,33 @@ struct SettingsScreen: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Appearance")) {
+            Section(header: Text("appearance")) {
                 Picker("Theme", selection: $appearance) {
-                    Text("System").tag(0)
-                    Text("Light").tag(1)
-                    Text("Dark").tag(2)
+                    Text("system").tag(0)
+                    Text("light").tag(1)
+                    Text("dark").tag(2)
                 }
                 .pickerStyle(.segmented)
                 .padding(.vertical, 4)
             }
             
-            Section(header: Text("Data & Sync")) {
+            Section(header: Text("data_sync")) {
                 Toggle("Sync Agenda to Calendar", isOn: $syncToCalendar)
                 Toggle("Download Video over Wi-Fi only", isOn: $downloadOverWifiOnly)
             }
             
-            Section(header: Text("Privacy")) {
+            Section(header: Text("privacy")) {
                 Toggle("Share Usage Analytics", isOn: $shareAnalytics)
                 Toggle("Make me discoverable to attendees", isOn: $discoverable)
             }
             
             Section {
-                Button("Delete Account") {
+                Button("delete_account") {
                     onDeleteAccountTapped()
                 }
                 .foregroundColor(.red)
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle("settings")
     }
 }

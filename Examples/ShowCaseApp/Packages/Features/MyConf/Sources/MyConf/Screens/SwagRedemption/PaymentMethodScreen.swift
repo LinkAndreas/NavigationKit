@@ -5,11 +5,11 @@ public struct PaymentMethodScreen: View {
 
     public var body: some View {
         VStack(spacing: 20) {
-            Text("Bank Data Selection").font(.title)
-            Button("Next: Summary", action: onNextTapped)
+            Text("bank_data_selection").font(.title)
+            Button("next_summary", action: onNextTapped)
         }
         .padding()
-        .navigationTitle("Bank Data")
+        .navigationTitle("bank_data")
     }
 }
 

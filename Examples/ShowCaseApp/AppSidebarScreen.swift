@@ -10,11 +10,11 @@ struct AppSidebarScreen: View {
     var body: some View {
         List(selection: selection) {
             ForEach(items) { item in
-                Label(item.title, systemImage: item.systemImage)
+                Label(LocalizedStringKey(item.title), systemImage: item.systemImage)
                     .tag(item.id)
             }
         }
-        .navigationTitle("ShowCase")
+        .navigationTitle("showcase")
     }
 
     private var selection: Binding<AppTab?> {

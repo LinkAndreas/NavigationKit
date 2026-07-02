@@ -6,7 +6,7 @@ struct PaymentMethodsScreen: View {
 
     var body: some View {
         List {
-            Section(header: Text("Saved Cards")) {
+            Section(header: Text("saved_cards")) {
                 ForEach(store.methods) { method in
                     HStack {
                         Image(systemName: method.type.iconName)
@@ -14,7 +14,7 @@ struct PaymentMethodsScreen: View {
                         VStack(alignment: .leading) {
                             Text(method.name)
                                 .font(.headline)
-                            Text("•••• •••• •••• \(method.lastFour)")
+                            Text("lastfour")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -27,11 +27,11 @@ struct PaymentMethodsScreen: View {
             
             Section {
                 Button(action: onAddPaymentMethodTapped) {
-                    Label("Add Payment Method", systemImage: "plus.circle.fill")
+                    Label("add_payment_method", systemImage: "plus.circle.fill")
                         .foregroundColor(.blue)
                 }
             }
         }
-        .navigationTitle("Payment")
+        .navigationTitle("payment")
     }
 }

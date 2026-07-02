@@ -21,13 +21,13 @@ struct DiscoverView: View {
                         .cornerRadius(20)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("WWDC 2026")
+                            Text("wwdc_2026")
                                 .font(.largeTitle)
                                 .fontWeight(.heavy)
                                 .foregroundColor(.white)
                                 .fontDesign(.rounded)
                             
-                            Text("The future of iOS starts here.")
+                            Text("the_future_of_ios_starts_here")
                                 .font(.headline)
                                 .foregroundColor(.white.opacity(0.9))
                         }
@@ -39,7 +39,7 @@ struct DiscoverView: View {
                 
                 // Horizontal Carousel
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Featured Keynotes")
+                    Text("featured_keynotes")
                         .font(.title2)
                         .fontWeight(.bold)
                         .padding(.horizontal)
@@ -85,7 +85,7 @@ struct DiscoverView: View {
                     Button(action: openSchedule) {
                         HStack {
                             Image(systemName: "calendar")
-                            Text("Browse Full Schedule")
+                            Text("browse_full_schedule")
                             Spacer()
                             Image(systemName: "chevron.right")
                         }
@@ -97,7 +97,7 @@ struct DiscoverView: View {
                     Button(action: openAccount) {
                         HStack {
                             Image(systemName: "person.crop.circle")
-                            Text("My Profile & Settings")
+                            Text("my_profile_settings")
                             Spacer()
                             Image(systemName: "chevron.right")
                         }
@@ -111,7 +111,7 @@ struct DiscoverView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Discover")
+        .navigationTitle("discover")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: openAccount) {

@@ -38,25 +38,25 @@ public struct KeynoteDetailsScreen: View {
                     HStack {
                         Image(systemName: "clock")
                             .foregroundColor(.blue)
-                        Text("June 8, 10:00 AM - 12:00 PM")
+                        Text("june_8_1000_am_1200_pm")
                             .font(.headline)
                     }
                     
                     HStack {
                         Image(systemName: "location.fill")
                             .foregroundColor(.blue)
-                        Text("Steve Jobs Theater")
+                        Text("steve_jobs_theater")
                             .font(.headline)
                     }
                     
                     Divider()
                     
-                    Text("Description")
+                    Text("description")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .padding(.top, 8)
                     
-                    Text("This keynote will cover all the new exciting features and frameworks introduced this year. Whether you are a beginner or a seasoned pro, you will find something interesting here to take your apps to the next level.")
+                    Text("this_keynote_will_cover_all_the_new_exci")
                         .foregroundColor(.secondary)
                         .lineSpacing(4)
                 }
@@ -64,7 +64,7 @@ public struct KeynoteDetailsScreen: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Keynote Details")
+        .navigationTitle("keynote_details")
         .navigationBarTitleDisplayMode(.inline)
     }
     

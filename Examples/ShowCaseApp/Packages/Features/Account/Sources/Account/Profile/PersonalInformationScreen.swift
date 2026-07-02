@@ -7,16 +7,16 @@ struct PersonalInformationScreen: View {
 
     var body: some View {
         Form {
-            Section(header: Text("Basic Info")) {
+            Section(header: Text("basic_info")) {
                 TextField("First Name", text: $firstName)
                 TextField("Last Name", text: $lastName)
             }
             
-            Section(header: Text("Contact")) {
+            Section(header: Text("contact")) {
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
             }
         }
-        .navigationTitle("Personal Info")
+        .navigationTitle("personal_info")
     }
 }

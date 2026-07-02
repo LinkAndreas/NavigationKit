@@ -21,7 +21,7 @@ struct AppTabItem: Identifiable {
 let appTabItems: [AppTabItem] = [
     AppTabItem(
         id: .discover,
-        title: "Discover",
+        title: "discover",
         systemImage: "sparkles",
         rootRoute: AnyRoute(DiscoverRoute.discover),
         makeNavigator: { StackNavigator(root: DiscoverRoute.discover) },
@@ -29,7 +29,7 @@ let appTabItems: [AppTabItem] = [
     ),
     AppTabItem(
         id: .schedule,
-        title: "Schedule",
+        title: "schedule",
         systemImage: "calendar",
         rootRoute: AnyRoute(ScheduleRoute.list),
         makeNavigator: { StackNavigator(root: ScheduleRoute.list) },
@@ -37,7 +37,7 @@ let appTabItems: [AppTabItem] = [
     ),
     AppTabItem(
         id: .myconf,
-        title: "MyConf",
+        title: "myconf",
         systemImage: "ticket",
         rootRoute: AnyRoute(MyConfRoute.overview),
         makeNavigator: { StackNavigator(root: MyConfRoute.overview) },
@@ -45,7 +45,7 @@ let appTabItems: [AppTabItem] = [
     ),
     AppTabItem(
         id: .speakers,
-        title: "Speakers",
+        title: "speakers",
         systemImage: "person.2",
         rootRoute: AnyRoute(SpeakersRoute.overview),
         makeNavigator: { StackNavigator(root: SpeakersRoute.overview) },
