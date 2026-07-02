@@ -21,8 +21,10 @@ struct StackContainer: View {
         .alert(error: $navigator.modals.error, retry: navigator.modals.errorRetry)
         .confirmationDialog(spec: $navigator.modals.confirmationDialog)
         .sheet(item: $navigator.modals.sheet) { modalNavigator in
-            NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder) }
+            NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder)
+        }
         .fullScreenCover(item: $navigator.modals.fullScreenCover) { modalNavigator in
-            NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder) }
+            NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder)
+        }
     }
 }

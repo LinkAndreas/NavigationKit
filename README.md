@@ -157,48 +157,93 @@ Curious how `NavigationKit` handles everything under the hood? Here's a high-lev
 
 ```mermaid
 classDiagram
+    direction TB
+    
     class NavigationContainer {
-        +navigator: RootNavigator
-        +routeBuilder: RouteBuilder
+        <<ViewModifier>>
+        +RootNavigator navigator
+        +RouteBuilder routeBuilder
     }
+    
+    class ModalContainer {
+        <<NavigationContainer>>
+    }
+    
     class RootNavigator {
-        <<enumeration>>
+        <<Enumeration>>
         +stack(StackNavigator)
         +tabs(TabsNavigator)
         +split(SplitNavigator)
     }
+    
     class StackNavigator {
-        +path: [AnyRoute]
-        +push()
+        <<Observable>>
+        +[AnyRoute] path
+        +push(route)
         +pop()
     }
-    class RouteBuilder {
-        +register(Route.Type)
-        +build(Route) -> AnyView
+
+    class TabsNavigator {
+        <<Observable>>
+        +AnyRoute selection
+        +select(tab)
     }
 
-    NavigationContainer --> RootNavigator : Render based on shape
-    NavigationContainer --> RouteBuilder : Resolves Views
-    RootNavigator ..> StackNavigator : Manages State
-    StackNavigator --> RouteBuilder : Queries View
+    class SplitNavigator {
+        <<Observable>>
+        +AnyRoute? detail
+        +showDetail(route)
+    }
+    
+    class RouteBuilder {
+        <<Registry>>
+        +register(Route.Type)
+        +build(Route) AnyView
+    }
+
+    NavigationContainer ..> ModalContainer : .sheet / .fullScreenCover
+    NavigationContainer ..> RootNavigator : Renders shape
+    NavigationContainer ..> RouteBuilder : Resolves views
+    RootNavigator --> StackNavigator : Contains state
+    RootNavigator --> TabsNavigator : Contains state
+    RootNavigator --> SplitNavigator : Contains state
+    
+    style NavigationContainer fill:transparent,stroke:#9e9e9e,stroke-width:2px
+    style ModalContainer fill:transparent,stroke:#9e9e9e,stroke-width:2px,stroke-dasharray: 5 5
+    style RootNavigator fill:transparent,stroke:#2196f3,stroke-width:2px
+    style StackNavigator fill:transparent,stroke:#4caf50,stroke-width:2px
+    style TabsNavigator fill:transparent,stroke:#4caf50,stroke-width:2px
+    style SplitNavigator fill:transparent,stroke:#4caf50,stroke-width:2px
+    style RouteBuilder fill:transparent,stroke:#ff9800,stroke-width:2px
 ```
 
 ### Route Registration Flow
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    actor User
     participant App as Application
+    participant Feature as Feature Module
     participant Builder as RouteBuilder
-    participant Feature as Feature Module (HomeRoute)
     participant Nav as NavigationContainer
     
-    App->>Builder: Initialize Registry
-    App->>Feature: register(HomeRoute)
-    Feature->>Builder: Map HomeRoute to FeatureViews
-    App->>Nav: Inject Navigator & Registry
-    Note over Nav, Feature: App is now ready to navigate.
-    Nav->>Builder: User navigates -> Resolve `HomeRoute.profile`
-    Builder-->>Nav: Returns `ProfileScreen`
+    rect rgba(128, 128, 128, 0.1)
+        Note over User, Nav: Setup Phase
+        App->>Builder: Initialize Registry
+        App->>Feature: Request Registration
+        Feature->>Builder: Map Routes to Views
+        App->>Nav: Inject State & Registry
+    end
+    
+    rect rgba(59, 130, 246, 0.1)
+        Note over User, Nav: Runtime Phase
+        User->>Nav: Taps "Go to Profile"
+        Note over Nav: Mutates State (e.g. push route)
+        Nav->>Builder: Resolve `HomeRoute.profile`
+        Builder-->>Nav: Returns `ProfileScreen`
+        Nav-->>User: Renders Screen
+    end
 ```
 
 ---
