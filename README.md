@@ -4,7 +4,9 @@
     <img src="Documentation/NavigationKit-editorial-light.svg" alt="NavigationKit Logo" width="100%" />
   </picture>
 
-  [![CI Status](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml/badge.svg)](https://github.com/linkandreas/NavigationKit/actions)
+  [![Tests](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Test%20NavigationKit&label=tests)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
+  [![ShowCase App](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Build%20ShowCaseApp%20example&label=showcase%20app)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
+  [![Documentation](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Build%20documentation&label=docs)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
   [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138.svg)](https://swift.org)
   [![iOS 26.0+](https://img.shields.io/badge/iOS-26.0%2B-blue.svg)](https://apple.com/ios)
   [![macOS 26.0+](https://img.shields.io/badge/macOS-26.0%2B-blue.svg)](https://apple.com/macos)
@@ -133,7 +135,7 @@ navigator.popToRoot()
 - [State Snapshots & Restoration](Documentation/StateSnapshots.md) — `StackState`, `TabsState`, `SplitState`, and each navigator's `apply(_:)`.
 - [Debugging](Documentation/Debugging.md) — the `NavigationKitDebug` overlay.
 
-Full API reference is available as a DocC catalog — see [Documentation.docc](Sources/NavigationKit/Documentation.docc).
+Full API reference is available as a DocC catalog. You can browse the [Online Documentation](https://linkandreas.github.io/NavigationKit/documentation/navigationkit) or view the raw source in [Documentation.docc](Sources/NavigationKit/Documentation.docc).
 
 ---
 

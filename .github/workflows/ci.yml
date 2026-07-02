@@ -50,11 +50,37 @@ jobs:
 
       - name: Build DocC documentation
         run: |
-          swift package \
-           --allow-writing-to-directory ./docs \
-            generate-documentation \
-            --target NavigationKit \
+          xcodebuild docbuild \
+            -scheme NavigationKit-Package \
+            -destination "$DESTINATION" \
+            -derivedDataPath ./.derivedData \
+            DOCC_HOSTING_BASE_PATH=NavigationKit
+            
+          $(xcrun --find docc) process-archive transform-for-static-hosting \
+            ./.derivedData/Build/Products/Debug-iphonesimulator/NavigationKit.doccarchive \
             --output-path ./docs \
-            --transform-for-static-hosting \
-            --hosting-base-path NavigationKit \
-            --platform ios
+            --hosting-base-path NavigationKit
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: Cleanup generated files
+        run: rm -rf .derivedData docs
+
+  deploy-docs:
+    name: Deploy documentation
+    needs: docs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
