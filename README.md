@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="Documentation/logo.png" alt="NavigationKit Logo" width="100%" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Documentation/NavigationKit-editorial-dark.svg">
+    <img src="Documentation/NavigationKit-editorial-light.svg" alt="NavigationKit Logo" width="100%" />
+  </picture>
 
   # NavigationKit
 
