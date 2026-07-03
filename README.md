@@ -142,16 +142,90 @@ Full API reference is available as a DocC catalog. You can browse the [Online Do
 [`ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `ShowCaseApp.xcproject` and run the `ShowCaseApp` scheme. 
 
 ### iPhone
-| Discover | Schedule | My Conf | Speakers |
-| :---: | :---: | :---: | :---: |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_discover.png"><img src="Examples/ShowCaseApp/Screenshots/light/iphone_discover.png" width="100%" /></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_schedule.png"><img src="Examples/ShowCaseApp/Screenshots/light/iphone_schedule.png" width="100%" /></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_myconf.png"><img src="Examples/ShowCaseApp/Screenshots/light/iphone_myconf.png" width="100%" /></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_speakers.png"><img src="Examples/ShowCaseApp/Screenshots/light/iphone_speakers.png" width="100%" /></picture> |
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Discover</th>
+      <th align="center">Schedule</th>
+      <th align="center">My Conf</th>
+      <th align="center">Speakers</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_discover.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_discover.png" width="280" alt="Discover">
+        </picture>
+      </td>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_schedule.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_schedule.png" width="280" alt="Schedule">
+        </picture>
+      </td>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_myconf.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_myconf.png" width="280" alt="My Conf">
+        </picture>
+      </td>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_speakers.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_speakers.png" width="280" alt="Speakers">
+        </picture>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ### iPad
-| Discover | Schedule |
-| :---: | :---: |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_discover.png"><img src="Examples/ShowCaseApp/Screenshots/light/ipad_discover.png" width="100%" /></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_schedule.png"><img src="Examples/ShowCaseApp/Screenshots/light/ipad_schedule.png" width="100%" /></picture> |
-| **My Conf** | **Speakers** |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_myconf.png"><img src="Examples/ShowCaseApp/Screenshots/light/ipad_myconf.png" width="100%" /></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_speakers.png"><img src="Examples/ShowCaseApp/Screenshots/light/ipad_speakers.png" width="100%" /></picture> |
+
+<table>
+  <thead>
+    <tr>
+      <th align="center">Discover</th>
+      <th align="center">Schedule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_discover.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_discover.png" width="560" alt="Discover">
+        </picture>
+      </td>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_schedule.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_schedule.png" width="560" alt="Schedule">
+        </picture>
+      </td>
+    </tr>
+    <tr>
+      <th align="center">My Conf</th>
+      <th align="center">Speakers</th>
+    </tr>
+    <tr>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_myconf.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_myconf.png" width="560" alt="My Conf">
+        </picture>
+      </td>
+      <td align="center">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_speakers.png">
+          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_speakers.png" width="560" alt="Speakers">
+        </picture>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 Highlights:
 - Adaptive root navigator (tab bar on iPhone, sidebar + detail split view on iPad).
