@@ -137,9 +137,9 @@ Full API reference is available as a DocC catalog. You can browse the [Online Do
 
 ---
 
-## 🧩 Example App
+## 🧩 ShowCaseApp App
 
-[`Examples/ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `Navigator.xcworkspace` and run the `ShowCaseApp` scheme. 
+[`ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `ShowCaseApp.xcproject` and run the `ShowCaseApp` scheme. 
 
 ### iPhone
 | Discover | Schedule | My Conf | Speakers |
@@ -172,7 +172,7 @@ classDiagram
     direction TB
     
     class NavigationContainer {
-        <<ViewModifier>>
+        <<View>>
         +RootNavigator navigator
         +RouteBuilder routeBuilder
     }
