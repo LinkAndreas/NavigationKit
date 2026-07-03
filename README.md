@@ -143,88 +143,56 @@ Full API reference is available as a DocC catalog. You can browse the [Online Do
 
 ### iPhone
 
-<table>
-  <thead>
-    <tr>
-      <th align="center">Discover</th>
-      <th align="center">Schedule</th>
-      <th align="center">My Conf</th>
-      <th align="center">Speakers</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_discover.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_discover.png" width="280" alt="Discover">
-        </picture>
-      </td>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_schedule.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_schedule.png" width="280" alt="Schedule">
-        </picture>
-      </td>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_myconf.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_myconf.png" width="280" alt="My Conf">
-        </picture>
-      </td>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/iphone_speakers.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/iphone_speakers.png" width="280" alt="Speakers">
-        </picture>
-      </td>
-    </tr>
-  </tbody>
+<table width="100%">
+  <tr>
+    <th align="center">Discover</th>
+    <th align="center">Schedule</th>
+    <th align="center">My Conf</th>
+    <th align="center">Speakers</th>
+  </tr>
+  <tr>
+    <td width="25%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/iphone_discover.png" width="100%" alt="Discover">
+    </td>
+    <td width="25%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/iphone_schedule.png" width="100%" alt="Schedule">
+    </td>
+    <td width="25%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/iphone_myconf.png" width="100%" alt="My Conf">
+    </td>
+    <td width="25%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/iphone_speakers.png" width="100%" alt="Speakers">
+    </td>
+  </tr>
 </table>
 
 ### iPad
 
-<table>
-  <thead>
-    <tr>
-      <th align="center">Discover</th>
-      <th align="center">Schedule</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_discover.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_discover.png" width="560" alt="Discover">
-        </picture>
-      </td>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_schedule.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_schedule.png" width="560" alt="Schedule">
-        </picture>
-      </td>
-    </tr>
-    <tr>
-      <th align="center">My Conf</th>
-      <th align="center">Speakers</th>
-    </tr>
-    <tr>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_myconf.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_myconf.png" width="560" alt="My Conf">
-        </picture>
-      </td>
-      <td align="center">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="Examples/ShowCaseApp/Screenshots/dark/ipad_speakers.png">
-          <img src="Examples/ShowCaseApp/Screenshots/light/ipad_speakers.png" width="560" alt="Speakers">
-        </picture>
-      </td>
-    </tr>
-  </tbody>
+<table width="100%">
+  <tr>
+    <th align="center">Discover</th>
+    <th align="center">Schedule</th>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/ipad_discover.png" width="100%" alt="Discover">
+    </td>
+    <td width="50%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/ipad_schedule.png" width="100%" alt="Schedule">
+    </td>
+  </tr>
+  <tr>
+    <th align="center">My Conf</th>
+    <th align="center">Speakers</th>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/ipad_myconf.png" width="100%" alt="My Conf">
+    </td>
+    <td width="50%" align="center">
+      <img src="Examples/ShowCaseApp/Screenshots/light/ipad_speakers.png" width="100%" alt="Speakers">
+    </td>
+  </tr>
 </table>
 
 Highlights:
