@@ -137,7 +137,7 @@ Full API reference is available as a DocC catalog. You can browse the [Online Do
 
 ---
 
-## 🧩 ShowCaseApp App
+## 🧩 ShowCase App
 
 [`ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `ShowCaseApp.xcproject` and run the `ShowCaseApp` scheme. 
 
