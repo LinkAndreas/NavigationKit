@@ -1,3 +1,4 @@
+#if os(iOS)
 import NavigationKit
 
 import SwiftUI
@@ -52,13 +53,7 @@ struct FloatingDebuggerView: View {
         }
         .sheet(isPresented: $isPresented) {
                 NavigationStack {
-                    ScrollView([.horizontal, .vertical]) {
-                        Text(navigator.debugDescription)
-                            .font(.system(.body, design: .monospaced))
-                            .fixedSize(horizontal: true, vertical: false)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                    }
+                    NavigationGraphView(navigator: navigator)
                     .navigationTitle("Navigation Graph")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -70,3 +65,4 @@ struct FloatingDebuggerView: View {
             }
     }
 }
+#endif

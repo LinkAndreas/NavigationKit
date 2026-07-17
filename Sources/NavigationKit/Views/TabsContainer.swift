@@ -26,7 +26,7 @@ import SwiftUI
         .sheet(item: $navigator.modals.sheet) { modalNavigator in
             NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder)
         }
-        .fullScreenCover(item: $navigator.modals.fullScreenCover) { modalNavigator in
+        .fullScreenCoverOrSheet(item: $navigator.modals.fullScreenCover) { modalNavigator in
             NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder)
         }
     }

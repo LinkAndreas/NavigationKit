@@ -19,6 +19,11 @@ navigator.presentSheet(SettingsRoute.root)
 navigator.presentFullScreenCover(OnboardingRoute.welcome)
 ```
 
+macOS has no full-screen cover, so `present(fullScreenCover:)` presents a sheet there instead.
+The API and the state are identical on both platforms — only the presentation differs — so a
+`NavigationState` snapshot carrying a `.fullScreenCover` still applies unchanged on macOS, and
+deep links round-trip across platforms.
+
 Dismiss the modal from inside it, using the child navigator:
 
 ```swift

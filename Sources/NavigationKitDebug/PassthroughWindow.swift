@@ -1,3 +1,4 @@
+#if os(iOS)
 import NavigationKit
 
 import UIKit
@@ -26,3 +27,4 @@ class PassthroughWindow: UIWindow {
         return nil
     }
 }
+#endif
