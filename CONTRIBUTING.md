@@ -16,7 +16,14 @@ the conventions the codebase follows, and how to submit a change.
 xcodebuild test \
   -scheme NavigationKit-Package \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+
+xcodebuild test \
+  -scheme NavigationKit-Package \
+  -destination 'platform=macOS'
 ```
+
+The package supports iOS and macOS, and CI runs the suite on both — so run both before
+submitting a change that touches presentation or the debugger.
 
 `Package.swift` lives at the repository root, next to `Navigator.xcworkspace`. If you run
 `xcodebuild` from the repo root, it picks up the workspace rather than treating the directory

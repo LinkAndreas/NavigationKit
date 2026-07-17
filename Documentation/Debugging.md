@@ -22,6 +22,10 @@ NavigationContainer(navigator: appNavigator, routeBuilder: routeBuilder)
 This adds a floating, system-level window (above your app's normal view hierarchy) hosting a
 red ladybug button. Drag it anywhere on screen; tap it to present the graph in a sheet.
 
+On macOS the button gets its own small panel, attached to your app's window so it follows the
+window and stays above any sheet the app presents. Drag it by its button; click it to open the
+graph in a separate window, which is the macOS idiom for an inspector.
+
 ## Gating it to DEBUG builds
 
 The example app wraps the modifier so it's a no-op in release builds — see

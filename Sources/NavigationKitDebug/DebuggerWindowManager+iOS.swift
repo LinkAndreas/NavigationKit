@@ -1,3 +1,4 @@
+#if os(iOS)
 import NavigationKit
 
 import SwiftUI
@@ -30,3 +31,4 @@ class DebuggerWindowManager {
         }
     }
 }
+#endif

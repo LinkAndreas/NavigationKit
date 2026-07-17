@@ -19,8 +19,16 @@ env:
 
 jobs:
   test:
-    name: Test NavigationKit
+    name: Test NavigationKit (${{ matrix.name }})
     runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: iOS
+            destination: platform=iOS Simulator,name=iPhone 17
+          - name: macOS
+            destination: platform=macOS
     steps:
       - uses: actions/checkout@v5
 
@@ -28,7 +36,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme NavigationKit-Package \
-            -destination "$DESTINATION"
+            -destination "${{ matrix.destination }}"
 
   build-example:
     name: Build ShowCaseApp example

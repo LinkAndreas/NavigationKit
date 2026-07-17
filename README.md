@@ -4,11 +4,13 @@
     <img src="Documentation/NavigationKit-editorial-light.svg" alt="NavigationKit Logo" width="100%" />
   </picture>
 
-  [![Tests](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Test%20NavigationKit&label=tests)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
+  [![Tests iOS](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Test%20NavigationKit%20%28iOS%29&label=tests%20%28iOS%29)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
+  [![Tests macOS](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Test%20NavigationKit%20%28macOS%29&label=tests%20%28macOS%29)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
   [![ShowCase App](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Build%20ShowCaseApp%20example&label=showcase%20app)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
   [![Documentation](https://img.shields.io/github/actions/workflow/status/linkandreas/NavigationKit/ci.yml?branch=main&job=Build%20documentation&label=docs)](https://github.com/linkandreas/NavigationKit/actions/workflows/ci.yml)
   [![Swift 6.4](https://img.shields.io/badge/Swift-6.4-F05138.svg)](https://swift.org)
   [![iOS 26.0+](https://img.shields.io/badge/iOS-26.0%2B-blue.svg)](https://apple.com/ios)
+  [![macOS 26.0+](https://img.shields.io/badge/macOS-26.0%2B-blue.svg)](https://apple.com/macos)
   [![Swift Package Manager](https://img.shields.io/badge/SPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -35,8 +37,14 @@ Vanilla SwiftUI navigation modifiers couple a view to the navigation action that
 ## 🛠 Requirements
 
 - **iOS** 26.0+
+- **macOS** 26.0+
 - **Swift** 6.4+
 - **Xcode** 27+
+
+Two things differ on macOS: `present(fullScreenCover:)` presents a sheet, since macOS has no
+full-screen cover, and the debugger button lives in its own floating panel that opens the graph in
+a separate window. Routes, navigators, state snapshots, and deep links behave identically on both
+platforms — see [Modals](Documentation/Modals.md) and [Debugging](Documentation/Debugging.md).
 
 ---
 
@@ -313,7 +321,10 @@ sequenceDiagram
 
 ```bash
 xcodebuild test -scheme NavigationKit-Package -destination "platform=iOS Simulator,name=iPhone 17 Pro"
+xcodebuild test -scheme NavigationKit-Package -destination "platform=macOS"
 ```
+
+CI runs both.
 
 ## 🤝 Contributing
 
