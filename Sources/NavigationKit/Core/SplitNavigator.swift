@@ -27,7 +27,10 @@ public final class SplitNavigator: ModalPresenter, Identifiable {
     
     /// The current visibility configuration for the split view's columns.
     public var columnVisibility: SplitVisibility = .automatic
-    
+
+    /// A fixed preferred width for the sidebar column, forwarded to `navigationSplitViewColumnWidth`.
+    public var sidebarColumnWidth: SidebarColumnWidth?
+
     /// The composed modal-presentation state (sheet, full screen cover, alert, etc.).
     public var modals = ModalBox()
 
@@ -38,16 +41,19 @@ public final class SplitNavigator: ModalPresenter, Identifiable {
     ///   - content: The navigator driving the optional middle column (three-column layouts).
     ///   - detail: The navigator driving the detail column.
     ///   - columnVisibility: The initial column visibility. Defaults to `.automatic`.
+    ///   - sidebarColumnWidth:The optional sidebar Column Width. Defaults to `.none`
     public init(
         sidebar: StackNavigator,
         content: StackNavigator? = nil,
         detail: StackNavigator,
-        columnVisibility: SplitVisibility = .automatic
+        columnVisibility: SplitVisibility = .automatic,
+        sidebarColumnWidth: SidebarColumnWidth? = nil
     ) {
         self.sidebar = sidebar
         self.content = content
         self.detail = detail
         self.columnVisibility = columnVisibility
+        self.sidebarColumnWidth = sidebarColumnWidth
     }
 
     /// Returns the active child navigators (sidebar, content, and detail) so that modal 

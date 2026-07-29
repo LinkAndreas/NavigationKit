@@ -15,7 +15,7 @@ struct SplitContainer: View {
         Group {
             if let content = navigator.content {
                 NavigationSplitView(columnVisibility: columnVisibilityBinding) {
-                    NavigationContainer(navigator: .stack(navigator.sidebar), routeBuilder: routeBuilder)
+                    sidebarContainer
                 } content: {
                     NavigationContainer(navigator: .stack(content), routeBuilder: routeBuilder)
                 } detail: {
@@ -23,7 +23,7 @@ struct SplitContainer: View {
                 }
             } else {
                 NavigationSplitView(columnVisibility: columnVisibilityBinding) {
-                    NavigationContainer(navigator: .stack(navigator.sidebar), routeBuilder: routeBuilder)
+                    sidebarContainer
                 } detail: {
                     NavigationContainer(navigator: .stack(navigator.detail), routeBuilder: routeBuilder)
                 }
@@ -37,6 +37,16 @@ struct SplitContainer: View {
         }
         .fullScreenCoverOrSheet(item: $navigator.modals.fullScreenCover) { modalNavigator in
             NavigationContainer(navigator: .stack(modalNavigator), routeBuilder: routeBuilder)
+        }
+    }
+
+    @ViewBuilder
+    private var sidebarContainer: some View {
+        let container = NavigationContainer(navigator: .stack(navigator.sidebar), routeBuilder: routeBuilder)
+        if let width = navigator.sidebarColumnWidth {
+            container.navigationSplitViewColumnWidth(min: width.min, ideal: width.ideal, max: width.max)
+        } else {
+            container
         }
     }
 
