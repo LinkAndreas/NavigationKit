@@ -3,7 +3,7 @@ import SwiftUI
 /// A SwiftUI View that renders a `RootNavigator` into an actual UI hierarchy.
 ///
 /// `NavigationContainer` acts as the root driver for your app's navigation tree.
-/// By switching on the provided `RootNavigator` (`.stack`, `.tabs`, or `.split`),
+/// By switching on the provided `RootNavigator` (`.stack`, `.tabs`, `.split`, or `.adaptive`),
 /// it delegates rendering to the matching container view.
 ///
 /// **Example Usage:**
@@ -44,6 +44,11 @@ public struct NavigationContainer: View {
             )
         case let .split(navigator):
             SplitContainer(
+                navigator: navigator,
+                routeBuilder: routeBuilder
+            )
+        case let .adaptive(navigator):
+            AdaptiveContainer(
                 navigator: navigator,
                 routeBuilder: routeBuilder
             )

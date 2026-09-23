@@ -7,8 +7,9 @@ A data-driven navigation framework for SwiftUI.
 `NavigationKit` models an app's navigation hierarchy — stacks, tabs, split views, sheets,
 full-screen covers, alerts, and confirmation dialogs — as observable, serializable state,
 rather than as imperative view modifiers. Each shape is its own `@Observable` class
-(``StackNavigator``, ``TabsNavigator``, ``SplitNavigator``); ``RootNavigator`` is a thin enum
-over the three, used wherever a caller needs to hold or render "a navigator" without
+(``StackNavigator``, ``TabsNavigator``, ``SplitNavigator``, and ``AdaptiveNavigator``, which
+switches between a tab bar and a split view as its window's width changes); ``RootNavigator`` is
+a thin enum over them, used wherever a caller needs to hold or render "a navigator" without
 committing to a shape up front. The same state can be captured as a snapshot (``StackState``,
 ``TabsState``, ``SplitState``) for deep linking and restoration.
 
@@ -26,6 +27,8 @@ navigator.presentSheet(SettingsRoute.root)
 - ``StackNavigator``
 - ``TabsNavigator``
 - ``SplitNavigator``
+- ``AdaptiveNavigator``
+- ``AdaptiveLayout``
 - ``NavigationContainer``
 - ``RouteBuilder``
 - ``AnyRoute``

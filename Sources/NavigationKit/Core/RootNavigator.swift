@@ -1,11 +1,11 @@
 import Foundation
 
-/// A type-erased reference to one of the three navigator shapes.
+/// A type-erased reference to one of the navigator shapes.
 ///
 /// Used wherever a caller needs to hold or render "a navigator" without committing to a
 /// specific shape up front — an app's root navigator, `NavigationContainer`'s parameter, or
 /// `applyDeepLink`'s target. Each shape is its own concrete `@Observable` class
-/// (``StackNavigator``, ``TabsNavigator``, ``SplitNavigator``); this enum is the only place a
+/// (``StackNavigator``, ``TabsNavigator``, ``SplitNavigator``, ``AdaptiveNavigator``); this enum is the only place a
 /// "kind" concept still exists, and the compiler enforces exhaustiveness on it, unlike a flag
 /// checked ad hoc at each call site.
 @MainActor
@@ -19,12 +19,17 @@ public enum RootNavigator: Identifiable {
     /// A multi-column iPad-style split interface wrapping a ``SplitNavigator``.
     case split(SplitNavigator)
 
+    /// A tab bar in a narrow window and a split view in a wide one, wrapping an
+    /// ``AdaptiveNavigator``.
+    case adaptive(AdaptiveNavigator)
+
     /// A unique identifier derived from the underlying wrapped navigator instance.
     public nonisolated var id: ObjectIdentifier {
         switch self {
         case let .stack(navigator): navigator.id
         case let .tabs(navigator): navigator.id
         case let .split(navigator): navigator.id
+        case let .adaptive(navigator): navigator.id
         }
     }
 }

@@ -7,6 +7,7 @@ extension RootNavigator: CustomDebugStringConvertible {
         case let .stack(navigator): navigator.debugDescription
         case let .tabs(navigator): navigator.debugDescription
         case let .split(navigator): navigator.debugDescription
+        case let .adaptive(navigator): navigator.debugDescription
         }
     }
 }
