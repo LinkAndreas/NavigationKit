@@ -17,7 +17,8 @@ public enum NavigationState: Equatable {
 ///
 /// This function attempts to apply the incoming state snapshot to the navigator's underlying
 /// state manager. If the shape (stack vs tabs vs split) of the incoming state does not match
-/// the current navigator's shape, the operation is ignored.
+/// the current navigator's shape, the operation is ignored. An adaptive navigator takes a tabs
+/// state into its tab bar and a split state into its split view, whichever is on screen.
 ///
 /// - Parameters:
 ///   - state: The desired target `NavigationState` snapshot.
@@ -31,6 +32,10 @@ public func applyDeepLink(_ state: NavigationState, to navigator: RootNavigator)
         navigator.apply(navigationState)
     case let (.split(navigator), .split(navigationState)):
         navigator.apply(navigationState)
+    case let (.adaptive(navigator), .tabs(navigationState)):
+        navigator.compact.apply(navigationState)
+    case let (.adaptive(navigator), .split(navigationState)):
+        navigator.regular.apply(navigationState)
     default:
         break   // shape mismatch — ignore (or route to a safe fallback)
     }
