@@ -11,6 +11,26 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-23
+
+### Added
+
+- `AdaptiveNavigator` and `RootNavigator.adaptive`: a tab bar in a narrow window and a split view
+  in a wide one, switching whenever the window's horizontal size class changes — unfolding a
+  foldable iPhone, resizing an iPad app in Split View or Stage Manager, or rotating a large iPhone.
+  Its own sheet, full-screen cover, and alerts sit above both layouts, so they stay up through a
+  switch; `onLayoutChange` lets the app carry its selection across. A `switch` over
+  `RootNavigator` needs a case for it.
+
+## [1.4.0] - 2026-07-29
+
+### Added
+
+- `SplitNavigator.sidebarColumnWidth`: an optional `SidebarColumnWidth` (minimum, ideal, maximum)
+  forwarded to the sidebar column's `navigationSplitViewColumnWidth`.
+
+## [1.3.6] - 2026-07-17
+
 ### Added
 
 - macOS 26 support. The core library needed no changes beyond full-screen covers: the navigators,
@@ -207,7 +227,10 @@ because each one is a published tag you can pin to.
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.5...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.6...v1.4.0
+[1.3.6]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.2...v1.3.3
