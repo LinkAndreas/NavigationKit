@@ -16,22 +16,47 @@ public extension NavigationRoot {
 struct NavigationDebuggerButton: View {
     let store: NavigationStore
     @State private var isPresented = false
+    /// Offset from the default bottom-trailing corner, so the button can be dragged out of the way.
+    @State private var offset: CGSize = .zero
+    @GestureState private var dragTranslation: CGSize = .zero
 
     var body: some View {
-        Button {
-            isPresented = true
-        } label: {
-            Image(systemName: "point.3.connected.trianglepath.dotted")
+        GeometryReader { proxy in
+            let button = Image(systemName: "point.3.connected.trianglepath.dotted")
                 .font(.title3)
                 .padding(12)
                 .background(.thinMaterial, in: Circle())
+                .contentShape(Circle())
+            button
+                .onTapGesture { isPresented = true }
+                .offset(clamped(offset + dragTranslation, in: proxy.size))
+                .gesture(
+                    DragGesture(minimumDistance: 4)
+                        .updating($dragTranslation) { value, state, _ in state = value.translation }
+                        .onEnded { value in offset = clamped(offset + value.translation, in: proxy.size) }
+                )
+                .padding()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
-        .buttonStyle(.plain)
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .sheet(isPresented: $isPresented) {
             NavigationDebuggerView(store: store)
         }
+    }
+
+    /// Keeps the button on screen. The offset is relative to the bottom-trailing corner, so it
+    /// can only move up and to the leading side.
+    private func clamped(_ offset: CGSize, in size: CGSize) -> CGSize {
+        let buttonSize: CGFloat = 76 // icon, padding and outer padding
+        return CGSize(
+            width: min(0, max(offset.width, buttonSize - size.width)),
+            height: min(0, max(offset.height, buttonSize - size.height))
+        )
+    }
+}
+
+private extension CGSize {
+    static func + (lhs: CGSize, rhs: CGSize) -> CGSize {
+        CGSize(width: lhs.width + rhs.width, height: lhs.height + rhs.height)
     }
 }
 
