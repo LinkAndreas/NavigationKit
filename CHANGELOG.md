@@ -11,6 +11,14 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-01
+
+### Added
+
+- Custom sidebars: `NavigationRoot(selection:sections:sidebar:)` and
+  `NavigationRoot(store:selection:sidebar:)` take your own sidebar view, which receives the selected
+  section as a binding, like `NavigationSplitView`'s sidebar.
+
 ## [2.0.1] - 2026-10-01
 
 ### Fixed
@@ -278,7 +286,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.4.0...v1.5.0
