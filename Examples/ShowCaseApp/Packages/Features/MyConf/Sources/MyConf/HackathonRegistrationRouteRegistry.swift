@@ -9,15 +9,14 @@ extension HackathonRegistrationRoute {
             TeamSizeSelectionScreen(
                 onProjectCategorySelectionTapped: { nav.push(.hackathonRegistration(.projectCategorySelection)) },
                 onCancellationTapped: {
-                    Task {
-                        let cancel = await nav.confirm(
-                            "Cancel Process?",
-                            message: "Are you sure you want to cancel the activity submission? All progress will be lost.",
-                            confirm: "Yes, cancel",
-                            destructive: true
-                        )
+                    nav.confirm(
+                        "Cancel Process?",
+                        message: "Are you sure you want to cancel the activity submission? All progress will be lost.",
+                        confirm: "Yes, cancel",
+                        destructive: true
+                    ) {
                         // Backing out of a flow resolves it as abandoned.
-                        if cancel { nav.pop(to: .dashboard) }
+                        nav.pop(to: .dashboard)
                     }
                 }
             )

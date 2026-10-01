@@ -55,27 +55,47 @@ nav.present(PhotoRoute.viewer(photo.id), as: .cover(zoomFrom: photo.id))
 
 On iPhone (or anywhere multiple windows aren't supported) `.window` falls back to a sheet.
 
-## Awaiting results
+## Results
+
+A presented screen hands a value back with `dismiss(returning:)`. Handle it in a callback:
 
 ```swift
-let color = await nav.present(ColorRoute.picker, returning: Color.self)
+nav.present(ColorRoute.picker, returning: Color.self) { color in
+    if let color { theme.accent = color }
+}
 // in the picker:
 nav.dismiss(returning: selectedColor)
 ```
 
-The result is `nil` if the modal was closed any other way — swiped down, tapped outside, dismissed by a tab switch or deep link. Every pending await is resolved exactly once, including for modals nested inside a dismissed modal.
+or, from async code, await it: `let color = await nav.present(ColorRoute.picker, returning: Color.self)`.
+
+The result is `nil` if the modal was closed any other way — swiped down, tapped outside, dismissed by a tab switch or deep link. Every presentation resolves exactly once, including modals nested inside a dismissed modal. Flows work the same way: `nav.flow(CheckoutRoute.cart, returning: Order.self) { order in … }`.
 
 ## Dialogs
 
-Dialogs are data you await, not state you wire:
+Each action carries what happens when it's chosen:
 
 ```swift
-if await nav.confirm("Delete draft?", confirm: "Delete", destructive: true) {
+nav.confirm("Delete draft?", confirm: "Delete", destructive: true) {
     drafts.delete(draft)
 }
 
-await nav.alert("Saved", message: "Your changes are live.")
+nav.alert("Saved", message: "Your changes are live.") { … }
 
+nav.retry(error) { Task { await upload() } }
+
+nav.dialog("Share", style: .confirmation) {
+    Dialog.Action("Copy Link") { pasteboard.copy(link) }
+    Dialog.Action("Message") { compose(link) }
+    Dialog.Action("Cancel", role: .cancel)
+} onDismiss: {
+    // dismissed without choosing, e.g. tapped outside
+}
+```
+
+The callback forms start the presentation on the next main-actor turn, so they suit button actions. Every call also has an `async` form that returns the outcome, for code already in a `Task`:
+
+```swift
 while true {
     do { try await upload(); break }
     catch { guard await nav.retry(error) else { break } }
@@ -83,13 +103,12 @@ while true {
 
 let choice = await nav.dialog("Share", style: .confirmation) {
     Dialog.Action("Copy Link", id: "copy")
-    Dialog.Action("Message", id: "message")
     Dialog.Action("Cancel", role: .cancel)
 }
 ```
 
 Inside the builder, write each action with its initializer, as you would a `Button` in a SwiftUI alert. The `.default`, `.cancel` and `.destructive` shortcuts are for array literals (`Dialog(title, actions: [.destructive("Delete"), .cancel()])`): on consecutive builder lines, Swift would chain them into a single call.
 
-`Dialog` and `Dialog.Action` contain no SwiftUI types, so view models in `NavigationKitInterface`-only modules can use them. Actions may also carry a handler for callers that prefer not to await.
+`Dialog` and `Dialog.Action` contain no SwiftUI types, so view models in `NavigationKitInterface`-only modules can use them.
 
 Presentation sequencing (dismiss, then present; present, then present on top) waits for real appear/disappear callbacks — there are no sleeps.

@@ -48,7 +48,7 @@ enum ScheduleRoute: ViewRoute {
 
 - **Screens don't know their layout.** A navigator is scoped to the screen that receives it; actions travel up the tree to whichever container can handle them. The same feature works in a tab, a sidebar, a sheet or a window.
 - **One verb per intent.** `present(route, as: .sheet(detents: [.medium]))` instead of a modifier per presentation type. Routes can declare traits (`presentation`, `requiresAuth`, `hidesTabBar`), so most call sites are just `nav.open(route)`.
-- **Results are awaited, not wired.** `let color = await nav.present(.picker, returning: Color.self)`, `if await nav.confirm("Delete?") { … }`, multi-step flows that `finishFlow(returning:)` and unwind exactly their own screens.
+- **Results come back to the caller, not through state.** `nav.present(.picker, returning: Color.self) { color in … }`, `nav.confirm("Delete?") { … }` — or `await` them — and multi-step flows that `finishFlow(returning:)` and unwind exactly their own screens.
 - **Layout-independent paths.** Deep links, `navigate(_:)`, restoration and test assertions all use the same `[Step]` language — no branching on tabs vs. split.
 - **No SwiftUI in your models.** The `NavigationKitInterface` target has routes, the `Navigator` protocol, steps and dialogs; view models and route-contract packages depend on it alone.
 - **No timing hacks.** Nested presentations are sequenced on real appear/disappear signals.
@@ -154,7 +154,7 @@ NavigationRoot(selection: AppTab.speakers) {
 nav.push(.detail(id: "s1"))
 nav.show(.detail(id: "s1"))                 // split detail column, or push in compact width
 nav.open(.contact(email: "a@b.c"))          // push or present, per the route's trait
-if await nav.confirm("Discard changes?", confirm: "Discard", destructive: true) { nav.pop() }
+nav.confirm("Discard changes?", confirm: "Discard", destructive: true) { nav.pop() }
 ```
 
 The [cheat sheet](#-cheat-sheet) below lists everything else.
@@ -269,8 +269,12 @@ nav.present(.player, as: .cover)              // .sheet, .sheet(detents:), .cove
                                               // .popover, .inspector, .window
 nav.dismiss()
 
-let card = await nav.present(PaymentRoute.add, returning: Card.self)   // nil if swiped away
-nav.dismiss(returning: card)                                            // in the presented screen
+nav.present(PaymentRoute.add, returning: Card.self) { card in   // nil if swiped away
+    if let card { model.use(card) }
+}
+nav.dismiss(returning: card)                                     // in the presented screen
+
+let card = await nav.present(PaymentRoute.add, returning: Card.self)   // or await the result
 ```
 
 For a zoom transition, mark the source with `.navigationZoomSource("photo-1")` and present with
@@ -281,21 +285,23 @@ For a zoom transition, mark the source with `.navigationZoomSource("photo-1")` a
 Texts are `LocalizedStringResource`s, looked up in your string catalog.
 
 ```swift
-if await nav.confirm("Delete?", message: "…", confirm: "Delete", destructive: true) { … }
-await nav.alert("Saved")
-if await nav.retry(error) { … }
+nav.confirm("Delete?", message: "…", confirm: "Delete", destructive: true) { model.delete() }
+nav.alert("Saved") { … }
+nav.retry(error) { model.reload() }
 
-let choice = await nav.dialog("Share", style: .confirmation) {
-    Dialog.Action("Copy Link", id: "copy")
+nav.dialog("Share", style: .confirmation) {
+    Dialog.Action("Copy Link") { model.copyLink() }     // each action's closure runs when chosen
     Dialog.Action("Cancel", role: .cancel)
 }
-if choice == "copy" { … }
 ```
+
+Every call also has an `async` form that returns the outcome, for code that's already in a `Task`:
+`if await nav.confirm("Delete?") { … }`, `let choice = await nav.dialog("Share") { … }`.
 
 ### Flows, guards and auth
 
 ```swift
-let order = await nav.flow(CheckoutRoute.cart, returning: Order.self)   // nil if the user backs out
+nav.flow(CheckoutRoute.cart, returning: Order.self) { order in }   // nil if the user backs out
 nav.finishFlow(returning: order)       // unwinds exactly the flow's screens
 
 FormScreen()

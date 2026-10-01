@@ -28,17 +28,14 @@ public struct ScheduleModule: TypedRouteModule {
                 },
                 onAddToMyConfTapped: {
                     SessionStore.save(sessionID: id)
-                    Task {
-                        let choice = await nav.dialog(
-                            "Added to MyConf",
-                            message: "This session has been saved to your personal schedule."
-                        ) {
-                            Dialog.Action("view_saved_sessions", id: "saved")
-                            Dialog.Action("OK", role: .cancel)
+                    nav.dialog(
+                        "Added to MyConf",
+                        message: "This session has been saved to your personal schedule."
+                    ) {
+                        Dialog.Action("view_saved_sessions") {
+                            if let url = URL(string: "navigator://myconf/savedSessions") { nav.open(url) }
                         }
-                        if choice == "saved", let url = URL(string: "navigator://myconf/savedSessions") {
-                            nav.open(url)
-                        }
+                        Dialog.Action("OK", role: .cancel)
                     }
                 }
             )
