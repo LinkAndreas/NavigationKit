@@ -1,42 +1,28 @@
 # Getting Started
 
-Build your first navigation hierarchy with ``StackNavigator``, ``RouteBuilder``, and
-``NavigationContainer``.
+Define routes, declare a root, navigate.
 
 ## Define routes
 
-Routes are plain `Hashable` values, typically one enum per feature:
-
 ```swift
-enum HomeRoute: Hashable {
-    case feed
-    case profile(id: String)
-}
-```
+enum SpeakersRoute: ViewRoute {
+    case overview, detail(id: String)
 
-## Register views for those routes
-
-```swift
-let routeBuilder = RouteBuilder()
-routeBuilder.register(HomeRoute.self) { route, navigator in
-    switch route {
-    case .feed:
-        FeedScreen(navigator: navigator)
-    case let .profile(id):
-        ProfileScreen(userID: id, navigator: navigator)
+    func body(_ nav: RouteNavigator<Self>) -> some View {
+        switch self {
+        case .overview: SpeakerList(onSelect: { nav.push(.detail(id: $0)) })
+        case let .detail(id): SpeakerDetail(id: id)
+        }
     }
 }
 ```
 
-## Create a navigator and render it
+## Declare the root
 
 ```swift
 struct ContentView: View {
-    let navigator = StackNavigator(root: HomeRoute.feed)
-    let routeBuilder = routeBuilder
-
     var body: some View {
-        NavigationContainer(navigator: .stack(navigator), routeBuilder: routeBuilder)
+        NavigationRoot(SpeakersRoute.overview)
     }
 }
 ```
@@ -44,11 +30,12 @@ struct ContentView: View {
 ## Navigate
 
 ```swift
-navigator.push(HomeRoute.profile(id: "123"))
-navigator.pop()
-navigator.popToRoot()
+nav.push(.detail(id: "s1"))
+nav.present(ComposeRoute.new, as: .sheet(detents: [.medium]))
+if await nav.confirm("Discard draft?", destructive: true) { nav.dismiss() }
+let order = await nav.flow(CheckoutRoute.cart, returning: Order.self)
 ```
 
-For tabs, split views, modals, deep linking, and state snapshots, see the guides in the
-repository's `Documentation/` directory: Stacks, Tabs & Split Views; Modals; Deep Linking;
-and State Snapshots & Restoration.
+## Next steps
+
+Sections and adaptive layouts, modals, flows, guards, deep links and restoration are covered in the guides in the repository's `Documentation` folder.

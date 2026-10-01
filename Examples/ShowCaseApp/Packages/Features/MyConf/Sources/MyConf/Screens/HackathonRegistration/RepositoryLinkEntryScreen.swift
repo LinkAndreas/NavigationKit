@@ -7,7 +7,7 @@ public struct RepositoryLinkEntryScreen: View {
     public var body: some View {
         VStack(spacing: 20) {
             Text("service_provider_form").font(.title)
-            Text("flow_flow").font(.subheadline)
+            Text("flow_flow \(flow.rawValue)").font(.subheadline)
             Button("next_summary", action: onNextTapped)
         }
         .padding()

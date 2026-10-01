@@ -59,31 +59,31 @@
         }
       }
     },
-    "lastfour": {
+    "lastfour %@": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "•••• •••• •••• \\(method.lastFour)"
+            "value": "•••• •••• •••• %@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "•••• •••• •••• \\(method.lastFour)"
+            "value": "•••• •••• •••• %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "•••• •••• •••• \\(method.lastFour)"
+            "value": "•••• •••• •••• %@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "•••• •••• •••• \\(method.lastFour)"
+            "value": "•••• •••• •••• %@"
           }
         }
       }
@@ -1955,31 +1955,31 @@
         }
       }
     },
-    "time_room": {
+    "time_room %@ %@": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.time) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.time) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.time) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.time) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         }
       }
@@ -2438,31 +2438,31 @@
         }
       }
     },
-    "flow_flow": {
+    "flow_flow %@": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ablauf: \\(flow.rawValue)"
+            "value": "Ablauf: %@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Flujo: \\(flow.rawValue)"
+            "value": "Flujo: %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Flux: \\(flow.rawValue)"
+            "value": "Flux: %@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Flow: \\(flow.rawValue)"
+            "value": "Flow: %@"
           }
         }
       }
@@ -3208,31 +3208,31 @@
         }
       }
     },
-    "speakername_room": {
+    "speakername_room %@ %@": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.speakerName) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.speakerName) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.speakerName) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(session.speakerName) • \\(session.room)"
+            "value": "%1$@ • %2$@"
           }
         }
       }
@@ -3469,31 +3469,31 @@
         }
       }
     },
-    "role_company": {
+    "role_company %@ %@": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(speaker.role), \\(speaker.company)"
+            "value": "%1$@, %2$@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(speaker.role), \\(speaker.company)"
+            "value": "%1$@, %2$@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(speaker.role), \\(speaker.company)"
+            "value": "%1$@, %2$@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(speaker.role), \\(speaker.company)"
+            "value": "%1$@, %2$@"
           }
         }
       }

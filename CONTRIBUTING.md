@@ -69,7 +69,7 @@ inline doc comments and, where relevant, the matching guide.
 Please include:
 
 - NavigationKit version (or commit SHA) and Xcode/Swift version.
-- A minimal reproduction — a small `StackNavigator`/`RouteBuilder` setup that demonstrates the
+- A minimal reproduction — a small `NavigationStore` or `NavigationRoot` setup that demonstrates the
   issue is far easier to debug than a description alone.
 - What you expected to happen vs. what actually happened.
 

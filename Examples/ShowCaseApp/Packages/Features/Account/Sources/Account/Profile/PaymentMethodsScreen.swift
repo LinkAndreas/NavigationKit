@@ -14,7 +14,7 @@ struct PaymentMethodsScreen: View {
                         VStack(alignment: .leading) {
                             Text(method.name)
                                 .font(.headline)
-                            Text("lastfour")
+                            Text("lastfour \(method.lastFour)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

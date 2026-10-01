@@ -1,58 +1,45 @@
 # ``NavigationKit``
 
-A data-driven navigation framework for SwiftUI.
+Layout-agnostic, state-driven navigation for SwiftUI.
 
 ## Overview
 
-`NavigationKit` models an app's navigation hierarchy — stacks, tabs, split views, sheets,
-full-screen covers, alerts, and confirmation dialogs — as observable, serializable state,
-rather than as imperative view modifiers. Each shape is its own `@Observable` class
-(``StackNavigator``, ``TabsNavigator``, ``SplitNavigator``, and ``AdaptiveNavigator``, which
-switches between a tab bar and a split view as its window's width changes); ``RootNavigator`` is
-a thin enum over them, used wherever a caller needs to hold or render "a navigator" without
-committing to a shape up front. The same state can be captured as a snapshot (``StackState``,
-``TabsState``, ``SplitState``) for deep linking and restoration.
+Every screen receives a `Navigator` scoped to where it is. It pushes, presents, shows, selects and dismisses without knowing whether it's in a tab, a sidebar, a sheet or a window; ``NavigationRoot`` builds the right containers around it. Navigation state is plain `Codable` data — deep links, restoration, Handoff and tests all use the same `Step` language.
 
 ```swift
-let navigator = StackNavigator(root: HomeRoute.feed)
-navigator.push(HomeRoute.profile(id: "123"))
-navigator.presentSheet(SettingsRoute.root)
+NavigationRoot(selection: AppTab.discover) {
+    RootSection(AppTab.discover, "Discover", icon: "sparkles") { DiscoverRoute.home }
+    RootSection(AppTab.schedule, "Schedule", icon: "calendar") { ScheduleRoute.list }
+}
+.layout(.adaptive)
+.deepLinks(AppLinks.self)
+.restoration(.sceneStorage("nav"))
 ```
 
 ## Topics
 
 ### Essentials
 
-- ``RootNavigator``
-- ``StackNavigator``
-- ``TabsNavigator``
-- ``SplitNavigator``
-- ``AdaptiveNavigator``
-- ``AdaptiveLayout``
-- ``NavigationContainer``
-- ``RouteBuilder``
-- ``AnyRoute``
-
-### Modals
-
-- ``ModalPresenter``
-- ``ModalBox``
-- ``AlertSpec``
-- ``ConfirmationDialogSpec``
-
-### Deep Linking
-
-- ``DeeplinkResolver``
-- ``applyDeepLink(_:to:)``
-
-### State Snapshots
-
-- ``NavigationState``
-- ``StackState``
-- ``TabsState``
-- ``SplitState``
-- ``SplitVisibility``
-
-### Articles
-
 - <doc:GettingStarted>
+- ``NavigationRoot``
+- ``RootSection``
+- ``NavigationLayout``
+
+### Routes and screens
+
+- ``ViewRoute``
+- ``RouteModule``
+- ``RouteRegistry``
+- ``RouteLink``
+
+### Navigating
+
+Screens navigate through `Navigator` (and its typed form `RouteNavigator`), presenting with a
+`PresentationStyle`, asking with a `Dialog`, and describing paths as `Step`s. These types live in
+`NavigationKitInterface`, which `NavigationKit` re-exports.
+
+### State
+
+- ``NavigationStore``
+- ``NavigationSnapshot``
+- ``Restoration``

@@ -1,125 +1,55 @@
 import Account
-import Schedule
 import Discover
-import NavigationKit
 import MyConf
+import NavigationKit
+import os
+import Schedule
 import Speakers
 import SwiftUI
-import UIKit
 
-public enum AppTab: Hashable {
-    case discover
-    case schedule
-    case myconf
-    case speakers
+/// Route modules for features whose screens need app-provided dependencies or cross-feature
+/// destinations. Features whose routes render themselves (`ViewRoute`) need no entry here.
+@MainActor
+let appModules: [any RouteModule] = [
+    ScheduleModule(speakerAvatarProvider: { speakerId in
+        SpeakerMock.speakers
+            .first { $0.id == speakerId }
+            .map { Image($0.imageName, bundle: SpeakerMock.speakersBundle) }
+    }),
+    DiscoverModule(scheduleRoute: ScheduleRoute.list, accountRoute: AccountRoute.profile),
+]
+
+/// Maps URLs to layout-independent steps. Each feature parses its own segments; the app only
+/// decides where they are mounted — no tab-vs-split branching.
+enum AppLinks: DeepLinks {
+    static func steps(for url: URL) -> [Step]? {
+        let segments = url.segments
+
+        // navigator://schedule/session/42 → Schedule, session in the detail column (or pushed)
+        if let routes = ScheduleDeepLink.parse(segments) {
+            return [Step.select(AppTab.schedule)] + routes.dropFirst().map { Step.show($0) }
+        }
+        // navigator://myconf/dashboard/reward
+        if let routes = MyConfDeepLink.parse(segments) {
+            return [Step.select(AppTab.myconf)] + routes.dropFirst().map { Step.push($0) }
+        }
+        // navigator://speakers/speaker/s1
+        if let routes = SpeakersDeepLink.parse(segments) {
+            return [Step.select(AppTab.speakers)] + routes.dropFirst().map { Step.push($0) }
+        }
+        // navigator://account/settings → Discover, account sheet, settings inside it
+        if let routes = AccountDeepLink.parse(segments), let root = routes.first {
+            return [Step.select(AppTab.discover), .present(root)] + routes.dropFirst().map { Step.push($0) }
+        }
+        return nil
+    }
 }
 
-final class AppContext {
-    let navigator: RootNavigator
-    let routeBuilder: RouteBuilder
-    let deeplinkResolver: DeeplinkResolver
+/// One place for analytics and logging, instead of tracking calls in every screen.
+enum NavigationAnalytics {
+    private static let logger = Logger(subsystem: "ShowCaseApp", category: "navigation")
 
-    /// iPad gets a sidebar + detail split navigator; iPhone keeps the tab bar.
-    /// A `RootNavigator`'s case is fixed for its lifetime, so this is decided once at
-    /// launch rather than adapting to size-class changes at runtime.
-    private let isSplit = UIDevice.current.userInterfaceIdiom == .pad
-
-    init() {
-        // MARK: - Navigator
-
-        // Built as a concrete `SplitNavigator` (not just `.split(...)`) so it can also be
-        // captured below for the sidebar's own route registration.
-        let splitNavigator: SplitNavigator?
-        if isSplit {
-            let split = SplitNavigator(
-                sidebar: StackNavigator(root: AppSidebarRoute.menu),
-                detail: appTabItems[0].makeNavigator(),
-                columnVisibility: .all
-            )
-            splitNavigator = split
-            navigator = .split(split)
-        } else {
-            splitNavigator = nil
-            navigator = .tabs(
-                TabsNavigator(
-                    tabs: appTabItems.map { item in
-                        TabsNavigator.Tab(
-                            id: item.id,
-                            title: item.title,
-                            systemImage: item.systemImage,
-                            navigator: item.makeNavigator()
-                        )
-                    },
-                    selection: AppTab.discover
-                )
-            )
-        }
-        routeBuilder = RouteBuilder()
-
-        // MARK: - Route Registration
-
-        ScheduleRouteBuilder.register(
-            in: routeBuilder,
-            speakerAvatarProvider: { speakerId in
-                if let speaker = SpeakerMock.speakers.first(where: { speaker in speaker.id == speakerId }) {
-                    return Image(speaker.imageName, bundle: SpeakerMock.speakersBundle)
-                }
-                return nil
-            }
-        )
-        AccountRouteBuilder.register(in: routeBuilder)
-        DiscoverRouteBuilder.register(
-            in: routeBuilder,
-            scheduleRoute: ScheduleRoute.list,
-            accountRoute: AccountRoute.profile
-        )
-        MyConfRouteBuilder.register(in: routeBuilder)
-        SpeakersRouteBuilder.register(in: routeBuilder)
-
-        if let splitNavigator {
-            routeBuilder.register(AppSidebarRoute.self) { _, _ in
-                AppSidebarScreen(items: appTabItems, splitNavigator: splitNavigator)
-            }
-        }
-
-        // MARK: - Deeplink Resolver
-
-        deeplinkResolver = DeeplinkResolver()
-
-        // navigator://schedule/session/42 → select Schedule tab, push session inside it
-        deeplinkResolver.register { [isSplit] url in
-            guard let routes = ScheduleDeepLink.parse(url.segments) else { return nil }
-            let stack = StackState(ScheduleRoute.list).pushing(all: Array(routes.dropFirst()))
-            return isSplit
-                ? SplitState(detail: stack).asState
-                : TabsState(selection: AppTab.schedule, tabs: [AnyHashable(AppTab.schedule): stack]).asState
-        }
-
-        // navigator://myconf/dashboard/reward → select MyConf tab, push up to reward
-        deeplinkResolver.register { [isSplit] url in
-            guard let routes = MyConfDeepLink.parse(url.segments) else { return nil }
-            let stack = StackState(MyConfRoute.overview).pushing(all: Array(routes.dropFirst()))
-            return isSplit
-                ? SplitState(detail: stack).asState
-                : TabsState(selection: AppTab.myconf, tabs: [AnyHashable(AppTab.myconf): stack]).asState
-        }
-
-        // navigator://speakers/speaker/s1 → select Speakers tab, push speaker details
-        deeplinkResolver.register { [isSplit] url in
-            guard let routes = SpeakersDeepLink.parse(url.segments) else { return nil }
-            let stack = StackState(SpeakersRoute.overview).pushing(all: Array(routes.dropFirst()))
-            return isSplit
-                ? SplitState(detail: stack).asState
-                : TabsState(selection: AppTab.speakers, tabs: [AnyHashable(AppTab.speakers): stack]).asState
-        }
-
-        // navigator://account/settings → select Discover tab, select Account, push settings
-        deeplinkResolver.register { [isSplit] url in
-            guard let stackState = AccountDeepLink.parse(url.segments) else { return nil }
-            let stack = StackState(DiscoverRoute.discover).presentingSheet(.stack(stackState))
-            return isSplit
-                ? SplitState(detail: stack).asState
-                : TabsState(selection: AppTab.discover, tabs: [AnyHashable(AppTab.discover): stack]).asState
-        }
+    static func track(_ event: NavigationEvent) {
+        logger.debug("\(event.description, privacy: .public)")
     }
 }
