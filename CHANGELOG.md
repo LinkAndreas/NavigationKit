@@ -11,6 +11,13 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-10-01
+
+### Changed
+
+- The README has a cheat sheet covering routes, the root, navigating, modals, dialogs, flows, guards,
+  deep links, restoration and testing.
+
 ## [2.1.1] - 2026-10-01
 
 ### Fixed
@@ -292,7 +299,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.0...v2.0.1
