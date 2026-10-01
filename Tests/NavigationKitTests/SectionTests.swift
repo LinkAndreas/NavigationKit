@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 @testable import NavigationKit
 
@@ -17,6 +18,19 @@ struct SectionTests {
         store.navigator.select(AppTab.schedule)
         store.navigator.show(ScheduleRoute.session(id: "1"))
         #expect(store.currentSteps == [.select(AppTab.schedule), .push(ScheduleRoute.session(id: "1"))])
+    }
+
+    @Test func customSidebarSelectionSwitchesSections() {
+        let store = makeStore(layout: .split)
+        let selection = store.selectionBinding(fallback: AppTab.home)
+        #expect(selection.wrappedValue == .home)
+
+        selection.wrappedValue = .schedule
+        #expect(store.selection(as: AppTab.self) == .schedule)
+        #expect(selection.wrappedValue == .schedule)
+
+        selection.wrappedValue = .account   // not a section
+        #expect(store.selection(as: AppTab.self) == .schedule)
     }
 
     @Test func showTargetsDetailColumnInSplitLayout() {

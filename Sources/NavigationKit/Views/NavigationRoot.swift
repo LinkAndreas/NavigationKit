@@ -53,9 +53,52 @@ public struct NavigationRoot: View {
         _store = State(initialValue: NavigationStore(layout: .adaptive, selection: selection, sections: sections()))
     }
 
+    /// Top-level sections with your own sidebar, shown whenever the layout has one (`.split`, or
+    /// `.adaptive` in a wide window). Like `NavigationSplitView`'s sidebar, it receives the
+    /// selection; setting it switches sections exactly as tapping the built-in sidebar would.
+    ///
+    /// ```swift
+    /// NavigationRoot(selection: Section.connect) {
+    ///     RootSection(Section.connect, "Connect") { ConnectRoute.home }
+    ///     RootSection(Section.history, "History") { HistoryRoute.list }
+    /// } sidebar: { selection in
+    ///     MySidebar(selection: selection)
+    /// }
+    /// .layout(.split)
+    /// ```
+    public init<ID: Hashable & Sendable, Sidebar: View>(
+        selection: ID,
+        @RootSectionsBuilder sections: () -> [RootSection],
+        @ViewBuilder sidebar: @escaping (Binding<ID>) -> Sidebar
+    ) {
+        let store = NavigationStore(layout: .adaptive, selection: selection, sections: sections())
+        store.customSidebar = Self.sidebarContent(selection, sidebar)
+        _store = State(initialValue: store)
+    }
+
     /// Renders a store you own — for navigating from outside the view hierarchy, or in tests.
     public init(store: NavigationStore) {
         _store = State(initialValue: store)
+    }
+
+    /// Renders a store you own with your own sidebar. `selection` is shown until the store
+    /// reports a selection of type `ID`; see ``init(selection:sections:sidebar:)``.
+    public init<ID: Hashable & Sendable, Sidebar: View>(
+        store: NavigationStore,
+        selection: ID,
+        @ViewBuilder sidebar: @escaping (Binding<ID>) -> Sidebar
+    ) {
+        store.customSidebar = Self.sidebarContent(selection, sidebar)
+        _store = State(initialValue: store)
+    }
+
+    private static func sidebarContent<ID: Hashable & Sendable, Sidebar: View>(
+        _ fallback: ID,
+        _ sidebar: @escaping (Binding<ID>) -> Sidebar
+    ) -> CustomSidebar {
+        CustomSidebar { store in
+            AnyView(sidebar(store.selectionBinding(fallback: fallback)))
+        }
     }
 
     // MARK: Body
@@ -307,5 +350,24 @@ struct HandoffModifier: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// A sidebar view supplied through `NavigationRoot`'s `sidebar:` initializers.
+struct CustomSidebar {
+    let content: @MainActor (NavigationStore) -> AnyView
+}
+
+extension NavigationStore {
+    /// The selected section as a binding, for custom sidebars. Setting it behaves like a tap on
+    /// the built-in sidebar; ids that aren't a section are ignored.
+    func selectionBinding<ID: Hashable & Sendable>(fallback: ID) -> Binding<ID> {
+        Binding(
+            get: { self.selection(as: ID.self) ?? fallback },
+            set: { id in
+                guard let index = self.sections.firstIndex(where: { $0.id == AnySectionID(id) }) else { return }
+                self.userSelect(index)
+            }
+        )
     }
 }

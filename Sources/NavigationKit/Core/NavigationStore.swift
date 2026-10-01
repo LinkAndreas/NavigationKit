@@ -34,6 +34,9 @@ public final class NavigationStore {
     @ObservationIgnored var loginRoute: AnyRoute?
     @ObservationIgnored var eventHandlers: [@MainActor (NavigationEvent) -> Void] = []
     @ObservationIgnored var didRestore = false
+    /// Replaces the built-in sidebar list when set (see `NavigationRoot`'s `sidebar:` initializers).
+    /// Type-erased so the core stays free of SwiftUI; it holds a `CustomSidebar`.
+    @ObservationIgnored var customSidebar: Any?
     /// Set once the scene is active, i.e. the root's views are in a window. Presenting earlier
     /// (restoration or a deep link at launch) makes UIKit defer the sheet and log a warning.
     @ObservationIgnored let sceneIsActive = Signal()

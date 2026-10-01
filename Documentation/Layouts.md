@@ -33,6 +33,25 @@ A section's id is any `Hashable & Sendable` value — usually an enum. It is wha
 
 Sections can be built from data too: `RootSectionsBuilder` accepts `if`, `for` and arrays of `RootSection`.
 
+## Your own sidebar
+
+The split layout draws a sidebar listing the sections. To draw your own — branding, extra
+status rows — pass a `sidebar:` closure. Like `NavigationSplitView`'s sidebar, it receives the
+selection as a binding; setting it switches sections exactly as a tap on the built-in list would.
+
+```swift
+NavigationRoot(selection: Section.connect) {
+    RootSection(Section.connect, "Connect") { ConnectRoute.home }
+    RootSection(Section.history, "History") { HistoryRoute.list }
+} sidebar: { selection in
+    MySidebar(selection: selection)
+}
+.layout(.split)
+```
+
+`NavigationRoot(store:selection:sidebar:)` does the same for a store you own. The sidebar is used
+wherever the layout has one; the tab bar in compact width still shows the sections' titles and icons.
+
 ## The detail column and `show`
 
 A section with a `detail:` gets a three-column split view in regular width: sidebar, the section's main stack, and a detail stack starting at the placeholder route.
