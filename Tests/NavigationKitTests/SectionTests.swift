@@ -20,6 +20,22 @@ struct SectionTests {
         #expect(store.currentSteps == [.select(AppTab.schedule), .push(ScheduleRoute.session(id: "1"))])
     }
 
+    @Test func sectionsCanBeBuiltFromDataWithDifferentRouteTypes() {
+        struct Tab { let id: AppTab; let title: LocalizedStringResource; let route: any Route }
+        let tabs = [
+            Tab(id: .home, title: "Home", route: HomeRoute.feed),
+            Tab(id: .schedule, title: "Schedule", route: ScheduleRoute.list),
+        ]
+        let store = NavigationStore(layout: .tabs, selection: AppTab.home, sections: tabs.map { tab in
+            RootSection(tab.id, tab.title) { tab.route }
+        })
+
+        #expect(store.snapshot.sections.compactMap { $0?.main.root } == [AnyRoute(HomeRoute.feed), AnyRoute(ScheduleRoute.list)])
+        store.navigator.select(AppTab.schedule)
+        store.navigator.push(ScheduleRoute.session(id: "1"))
+        #expect(store.currentSteps == [.select(AppTab.schedule), .push(ScheduleRoute.session(id: "1"))])
+    }
+
     @Test func customSidebarSelectionSwitchesSections() {
         let store = makeStore(layout: .split)
         let selection = store.selectionBinding(fallback: AppTab.home)

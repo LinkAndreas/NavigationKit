@@ -31,7 +31,17 @@ NavigationRoot(selection: AppTab.schedule) {
 
 A section's id is any `Hashable & Sendable` value — usually an enum. It is what `nav.select(_:)`, `Step.select(_:)` and `store.selection(as:)` use. Titles are `LocalizedStringResource`s, so string literals are looked up in your string catalog.
 
-Sections can be built from data too: `RootSectionsBuilder` accepts `if`, `for` and arrays of `RootSection`.
+Sections can be built from data too: `RootSectionsBuilder` accepts `if`, `for` and arrays of `RootSection`. Roots are `any Route`, so the tabs can use different route types:
+
+```swift
+struct Tab: Identifiable { let id = UUID(); let title: LocalizedStringResource; let icon: String; let route: any Route }
+
+NavigationRoot {
+    for tab in tabs {
+        RootSection(tab.id, tab.title, icon: tab.icon) { tab.route }
+    }
+}
+```
 
 ## Your own sidebar
 
