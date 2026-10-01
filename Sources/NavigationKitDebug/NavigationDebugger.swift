@@ -100,6 +100,10 @@ struct NavigationDebuggerView: View {
                 }
             }
         }
+        #if os(macOS)
+        // A macOS sheet sizes to its content, and a List has no height of its own.
+        .frame(minWidth: 480, idealWidth: 560, minHeight: 520, idealHeight: 680)
+        #endif
     }
 }
 
