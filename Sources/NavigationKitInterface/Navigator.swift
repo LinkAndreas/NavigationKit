@@ -159,6 +159,110 @@ public extension Navigator {
     }
 }
 
+// MARK: - Callbacks
+
+/// Callback variants of the awaited calls, for call sites that would rather not start a `Task`:
+/// a button action can present, ask or start a flow and handle the outcome in a closure.
+///
+/// ```swift
+/// nav.present(PaymentRoute.add, returning: Card.self) { card in
+///     if let card { model.use(card) }
+/// }
+///
+/// nav.dialog("Share", style: .confirmation) {
+///     Dialog.Action("Copy Link") { model.copyLink() }
+///     Dialog.Action("Cancel", role: .cancel)
+/// }
+/// ```
+///
+/// The presentation starts on the next main-actor turn; the closure runs once with the outcome.
+public extension Navigator {
+    /// Presents `route` and calls `onDismiss` with the value passed to ``dismiss(returning:)``,
+    /// or `nil` if the user dismissed it another way.
+    func present<R: Route, T: Sendable>(
+        _ route: R,
+        as style: PresentationStyle? = nil,
+        returning: T.Type,
+        onDismiss: @escaping @MainActor (T?) -> Void
+    ) {
+        Task { @MainActor in onDismiss(await present(route, as: style, returning: T.self)) }
+    }
+
+    /// Starts a flow and calls `onFinish` with the value passed to ``finishFlow(returning:)``, or
+    /// `nil` if the user backed out.
+    func flow<R: Route, T: Sendable>(
+        _ route: R,
+        as style: PresentationStyle? = nil,
+        returning: T.Type,
+        onFinish: @escaping @MainActor (T?) -> Void
+    ) {
+        Task { @MainActor in onFinish(await flow(route, as: style, returning: T.self)) }
+    }
+
+    /// Starts a flow that produces no value and calls `onFinish` with `true` if it finished,
+    /// `false` if it was abandoned.
+    func flow<R: Route>(
+        _ route: R,
+        as style: PresentationStyle? = nil,
+        onFinish: @escaping @MainActor (Bool) -> Void
+    ) {
+        Task { @MainActor in onFinish(await flow(route, as: style)) }
+    }
+
+    /// Shows a dialog; the chosen action's handler runs, and `onDismiss` runs if the dialog is
+    /// dismissed without choosing one.
+    func dialog(
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
+        style: Dialog.Style = .alert,
+        @DialogActionsBuilder actions: () -> [Dialog.Action],
+        onDismiss: (@MainActor () -> Void)? = nil
+    ) {
+        let dialog = Dialog(title, message: message, style: style, actions: actions())
+        Task { @MainActor in
+            if await self.dialog(dialog) == nil { onDismiss?() }
+        }
+    }
+
+    /// Asks a yes/no question and calls `onConfirm` only if the user confirmed.
+    func confirm(
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
+        confirm confirmTitle: LocalizedStringResource = "OK",
+        destructive: Bool = false,
+        onConfirm: @escaping @MainActor () -> Void
+    ) {
+        Task { @MainActor in
+            if await confirm(title, message: message, confirm: confirmTitle, destructive: destructive) {
+                onConfirm()
+            }
+        }
+    }
+
+    /// Shows an informational alert and calls `onDismiss` once it is acknowledged.
+    func alert(
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
+        onDismiss: @escaping @MainActor () -> Void
+    ) {
+        Task { @MainActor in
+            await alert(title, message: message)
+            onDismiss()
+        }
+    }
+
+    /// Presents `error` with Retry and Cancel, and calls `onRetry` if the user chose Retry.
+    func retry(
+        _ error: any Error,
+        title: LocalizedStringResource = "Something went wrong",
+        onRetry: @escaping @MainActor () -> Void
+    ) {
+        Task { @MainActor in
+            if await retry(error, title: title) { onRetry() }
+        }
+    }
+}
+
 /// A navigator that knows the route type of the screen it was handed to, so call sites can use
 /// leading-dot syntax for their own feature's routes: `nav.push(.detail(id: id))`.
 ///

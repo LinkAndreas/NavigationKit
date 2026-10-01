@@ -13,10 +13,8 @@ extension AccountRoute: ViewRoute {
                 onPaymentMethodsTapped: { nav.push(.paymentMethods) },
                 onSettingsTapped: { nav.push(.settings) },
                 onLogoutTapped: {
-                    Task {
-                        if await nav.confirm("Log out?", confirm: "Log out", destructive: true) {
-                            nav.dismiss()
-                        }
+                    nav.confirm("Log out?", confirm: "Log out", destructive: true) {
+                        nav.dismiss()
                     }
                 },
                 onCloseTapped: { nav.dismiss() }
@@ -34,14 +32,13 @@ extension AccountRoute: ViewRoute {
             )
         case .settings:
             SettingsScreen(onDeleteAccountTapped: {
-                Task {
-                    let confirmed = await nav.confirm(
-                        "Delete Account",
-                        message: "Are you sure you want to permanently delete your account?",
-                        confirm: "Delete",
-                        destructive: true
-                    )
-                    if confirmed { nav.popToRoot() }
+                nav.confirm(
+                    "Delete Account",
+                    message: "Are you sure you want to permanently delete your account?",
+                    confirm: "Delete",
+                    destructive: true
+                ) {
+                    nav.popToRoot()
                 }
             })
         }
