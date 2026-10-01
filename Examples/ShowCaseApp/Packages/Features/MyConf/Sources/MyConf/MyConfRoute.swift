@@ -34,6 +34,6 @@ public enum MyConfRoute: Route {
     case hackathonRegistration(HackathonRegistrationRoute)
 
     public var presentation: PresentationStyle? {
-        if case .scanQRCode = self { .cover } else { nil }
+        if case .scanQRCode = self { .sheet } else { nil }
     }
 }
