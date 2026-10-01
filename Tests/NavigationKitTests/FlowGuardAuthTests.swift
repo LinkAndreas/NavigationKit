@@ -72,18 +72,23 @@ struct GuardTests {
 @MainActor
 struct AuthTests {
     @Test func authGatePresentsLoginThenContinues() async {
-        var loggedIn = false
+        let session = Session()
         let store = NavigationStore(root: HomeRoute.feed)
-        store.authCheck = { loggedIn }
+        store.authCheck = { session.isLoggedIn }
         store.loginRoute = AnyRoute(HomeRoute.login)
 
         store.navigator.open(HomeRoute.settings)
         await settle()
         #expect(store.currentSteps == [.present(route: AnyRoute(HomeRoute.login), style: .cover)])
 
-        loggedIn = true
+        session.isLoggedIn = true
         store.navigator.dismiss(returning: true)
         await settle()
         #expect(store.currentSteps == [.present(route: AnyRoute(HomeRoute.settings), style: .sheet(detents: [.medium]))])
     }
+}
+
+@MainActor
+private final class Session {
+    var isLoggedIn = false
 }
