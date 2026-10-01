@@ -4,6 +4,18 @@ import Testing
 
 @MainActor
 struct ModalTests {
+    @Test func inspectorInsideAModalFallsBackToASheet() throws {
+        let store = NavigationStore(root: HomeRoute.feed)
+        let nav = store.navigator
+        nav.present(ScheduleRoute.list, as: .inspector)
+        let inspector = try #require(store.sections[0].main.modal)
+        #expect(inspector.effectiveKind == .inspector)
+
+        nav.present(ScheduleRoute.placeholder, as: .inspector)
+        let nested = try #require(inspector.stack.modal)
+        #expect(nested.effectiveKind == .sheet)
+    }
+
     @Test func presentDefaultsToSheetAndPushesInsideIt() {
         let store = NavigationStore(root: HomeRoute.feed)
         let nav = store.navigator

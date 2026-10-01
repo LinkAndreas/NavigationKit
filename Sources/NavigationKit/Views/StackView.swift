@@ -21,7 +21,10 @@ struct StackView: View {
                     ScreenView(entry: entry, stack: stack)
                 }
         }
-        .modifier(InspectorPresentationModifier(stacks: stack.isSplitColumn ? [] : [stack]))
+        // Split columns get their inspector from the split view, and modals present inspectors as
+        // sheets: an inspector wrapping a modal's stack hides the screen's presentation settings,
+        // such as interactiveDismissDisabled, from the sheet.
+        .modifier(InspectorPresentationModifier(stacks: stack.isSplitColumn || stack.presentingModal != nil ? [] : [stack]))
         .modifier(ModalPresentationModifier(stack: stack))
     }
 }
@@ -54,7 +57,14 @@ struct ModalContentView: View {
         StackView(stack: modal.stack)
             .modifier(DetentsModifier(detents: modal.style.detents))
             .modifier(ZoomTransitionModifier(sourceID: modal.style.zoomSourceID, namespace: namespace))
-            .interactiveDismissDisabled(modal.stack.hasActiveGuard)
+            // Only while guarded, and in the background so the stack keeps its identity: any
+            // interactiveDismissDisabled(false) here would override a screen that disables
+            // interactive dismissal itself.
+            .background {
+                if modal.stack.hasActiveGuard {
+                    Color.clear.interactiveDismissDisabled()
+                }
+            }
             .onAppear { modal.appeared.set() }
             .onDisappear { modal.disappeared.set() }
     }
