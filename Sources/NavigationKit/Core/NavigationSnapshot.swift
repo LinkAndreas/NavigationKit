@@ -123,6 +123,9 @@ extension NavigationStore {
             selectionIndex = snapshot.selection
         }
         if let saved = snapshot.sections[safe: selectionIndex] ?? nil {
+            if isAttached, saved.main.modal != nil || saved.detail?.modal != nil {
+                await sceneIsActive.wait()
+            }
             await presentModals(saved.main.modal, from: selectedSection.main)
             if let detail = selectedSection.detail {
                 await presentModals(saved.detail?.modal, from: detail)

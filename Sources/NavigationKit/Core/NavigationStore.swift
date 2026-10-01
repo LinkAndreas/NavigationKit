@@ -34,6 +34,9 @@ public final class NavigationStore {
     @ObservationIgnored var loginRoute: AnyRoute?
     @ObservationIgnored var eventHandlers: [@MainActor (NavigationEvent) -> Void] = []
     @ObservationIgnored var didRestore = false
+    /// Set once the scene is active, i.e. the root's views are in a window. Presenting earlier
+    /// (restoration or a deep link at launch) makes UIKit defer the sheet and log a warning.
+    @ObservationIgnored let sceneIsActive = Signal()
     @ObservationIgnored private var eventContinuations: [UUID: AsyncStream<NavigationEvent>.Continuation] = [:]
 
     static let singleSectionID = AnySectionID("NavigationKit.main")
@@ -142,6 +145,7 @@ public final class NavigationStore {
                     emit(.pushed(route))
                 }
             case let .present(route, style):
+                if isAttached { await sceneIsActive.wait() }
                 guard let modal = present(route, style: style, from: cursor, isFlow: false) else { continue }
                 if isAttached { await modal.appeared.wait() }
                 cursor = modal.stack

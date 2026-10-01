@@ -19,6 +19,7 @@ public struct NavigationRoot: View {
     @Namespace private var zoomNamespace
     @Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.scenePhase) private var scenePhase
 
     private var layout: NavigationLayout?
     private var registry: RouteRegistry?
@@ -76,6 +77,9 @@ public struct NavigationRoot: View {
                 store.openWindow = { route in openWindow(value: route) }
             }
             .onDisappear { store.isAttached = false }
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                if phase == .active { store.sceneIsActive.set() }
+            }
             .overlay {
                 ForEach(accessories.indices, id: \.self) { index in
                     accessories[index](store)
