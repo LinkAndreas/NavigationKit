@@ -26,7 +26,7 @@ struct SpeakerDetailsScreen: View {
                         Text(speaker.name)
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                        Text("role_company")
+                        Text("role_company \(speaker.role) \(speaker.company)")
                             .font(.headline)
                             .foregroundColor(.secondary)
                     }

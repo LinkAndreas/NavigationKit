@@ -32,7 +32,7 @@ struct ScheduleView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.primary)
                             
-                            Text("speakername_room")
+                            Text("speakername_room \(session.speakerName) \(session.room)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }

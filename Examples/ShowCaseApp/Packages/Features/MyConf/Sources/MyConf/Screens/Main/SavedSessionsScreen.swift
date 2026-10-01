@@ -32,7 +32,7 @@ public struct SavedSessionsScreen: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(session.title)
                             .font(.headline)
-                        Text("time_room")
+                        Text("time_room \(session.time) \(session.room)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
