@@ -178,10 +178,12 @@ final class ModalNode: Identifiable {
 
     /// The presentation actually used on this platform.
     var effectiveKind: PresentationStyle.Kind {
+        // Inside a modal there is no inspector column: present it as a sheet instead.
+        if style.kind == .inspector, presenter?.presentingModal != nil { return .sheet }
         #if os(macOS)
-        style.kind == .cover ? .sheet : style.kind
+        return style.kind == .cover ? .sheet : style.kind
         #else
-        style.kind
+        return style.kind
         #endif
     }
 
