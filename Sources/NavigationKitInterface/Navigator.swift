@@ -119,8 +119,8 @@ public extension Navigator {
     /// }
     /// ```
     func dialog(
-        _ title: String,
-        message: String? = nil,
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
         style: Dialog.Style = .alert,
         @DialogActionsBuilder actions: () -> [Dialog.Action]
     ) async -> Dialog.Action.ID? {
@@ -129,9 +129,9 @@ public extension Navigator {
 
     /// Asks a yes/no question. Returns `true` only if the user confirmed.
     func confirm(
-        _ title: String,
-        message: String? = nil,
-        confirm confirmTitle: String = "OK",
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
+        confirm confirmTitle: LocalizedStringResource = "OK",
         destructive: Bool = false
     ) async -> Bool {
         let confirmID = "confirm"
@@ -143,14 +143,15 @@ public extension Navigator {
     }
 
     /// Shows an informational alert and waits until it is acknowledged.
-    func alert(_ title: String, message: String? = nil) async {
+    func alert(_ title: LocalizedStringResource, message: LocalizedStringResource? = nil) async {
         _ = await dialog(Dialog(title, message: message, actions: [.default("OK")]))
     }
 
     /// Presents `error` with Retry and Cancel. Returns `true` if the user chose Retry.
-    func retry(_ error: any Error, title: String = "Something went wrong") async -> Bool {
+    func retry(_ error: any Error, title: LocalizedStringResource = "Something went wrong") async -> Bool {
         let retryID = "retry"
-        let choice = await dialog(Dialog(title, message: error.localizedDescription, actions: [
+        // Interpolated, so the already-localized description is shown as-is.
+        let choice = await dialog(Dialog(title, message: "\(error.localizedDescription)", actions: [
             .cancel(),
             .default("Retry", id: retryID),
         ]))

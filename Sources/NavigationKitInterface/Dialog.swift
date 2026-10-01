@@ -2,6 +2,9 @@ import Foundation
 
 /// An alert or confirmation dialog, described as data.
 ///
+/// Texts are `LocalizedStringResource`s, so they're translated when shown, using the bundle they
+/// were created in. Show a runtime string as-is by interpolating it: `"\(error.localizedDescription)"`.
+///
 /// Dialogs are awaited rather than wired up with state:
 ///
 /// ```swift
@@ -29,35 +32,35 @@ public struct Dialog: Identifiable, Sendable {
         }
 
         public let id: String
-        public let title: String
+        public let title: LocalizedStringResource
         public let role: Role
         let handler: (@MainActor @Sendable () -> Void)?
 
         /// - Parameters:
-        ///   - id: What the awaiting call returns when this action is chosen. Defaults to `title`,
+        ///   - id: What the awaiting call returns when this action is chosen. Defaults to the title's key,
         ///     or ``cancelID`` for the cancel role.
         ///   - handler: Optional side effect, for callers that prefer not to await.
         public init(
-            _ title: String,
+            _ title: LocalizedStringResource,
             role: Role = .default,
             id: String? = nil,
             handler: (@MainActor @Sendable () -> Void)? = nil
         ) {
-            self.id = id ?? (role == .cancel ? Action.cancelID : title)
+            self.id = id ?? (role == .cancel ? Action.cancelID : title.key)
             self.title = title
             self.role = role
             self.handler = handler
         }
 
-        public static func `default`(_ title: String, id: String? = nil, handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
+        public static func `default`(_ title: LocalizedStringResource, id: String? = nil, handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
             Action(title, role: .default, id: id, handler: handler)
         }
 
-        public static func cancel(_ title: String = "Cancel", handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
+        public static func cancel(_ title: LocalizedStringResource = "Cancel", handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
             Action(title, role: .cancel, handler: handler)
         }
 
-        public static func destructive(_ title: String, id: String? = nil, handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
+        public static func destructive(_ title: LocalizedStringResource, id: String? = nil, handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
             Action(title, role: .destructive, id: id, handler: handler)
         }
 
@@ -66,23 +69,23 @@ public struct Dialog: Identifiable, Sendable {
         @MainActor public func perform() { handler?() }
 
         public static func == (lhs: Action, rhs: Action) -> Bool {
-            lhs.id == rhs.id && lhs.title == rhs.title && lhs.role == rhs.role
+            lhs.id == rhs.id && lhs.title.key == rhs.title.key && lhs.role == rhs.role
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(id)
-            hasher.combine(title)
+            hasher.combine(title.key)
             hasher.combine(role)
         }
     }
 
     public let id = UUID()
-    public var title: String
-    public var message: String?
+    public var title: LocalizedStringResource
+    public var message: LocalizedStringResource?
     public var style: Style
     public var actions: [Action]
 
-    public init(_ title: String, message: String? = nil, style: Style = .alert, actions: [Action]) {
+    public init(_ title: LocalizedStringResource, message: LocalizedStringResource? = nil, style: Style = .alert, actions: [Action]) {
         self.title = title
         self.message = message
         self.style = style
@@ -90,8 +93,8 @@ public struct Dialog: Identifiable, Sendable {
     }
 
     public init(
-        _ title: String,
-        message: String? = nil,
+        _ title: LocalizedStringResource,
+        message: LocalizedStringResource? = nil,
         style: Style = .alert,
         @DialogActionsBuilder actions: () -> [Action]
     ) {

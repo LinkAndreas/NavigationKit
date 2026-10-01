@@ -13,9 +13,9 @@ public extension View {
     /// Guards this screen with a ready-made "discard changes?" confirmation.
     func navigationGuard(
         when isActive: Bool,
-        confirm title: String = "Discard changes?",
-        message: String? = nil,
-        discard: String = "Discard"
+        confirm title: LocalizedStringResource = "Discard changes?",
+        message: LocalizedStringResource? = nil,
+        discard: LocalizedStringResource = "Discard"
     ) -> some View {
         modifier(NavigationGuardModifier(isActive: isActive) { navigator in
             await navigator.confirm(title, message: message, confirm: discard, destructive: true)

@@ -55,7 +55,7 @@ struct DialogPresentationModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         let request = stack.dialog
-        let title = request?.dialog.title ?? ""
+        let title = request.map { Text($0.dialog.title) } ?? Text(verbatim: "")
         content
             .alert(title, isPresented: isPresented(.alert), presenting: request) { request in
                 actions(for: request)
@@ -72,8 +72,10 @@ struct DialogPresentationModifier: ViewModifier {
     @ViewBuilder
     private func actions(for request: DialogRequest) -> some View {
         ForEach(request.dialog.actions) { action in
-            Button(action.title, role: action.role.buttonRole) {
+            Button(role: action.role.buttonRole) {
                 stack.store?.resolveDialog(on: stack, with: action)
+            } label: {
+                Text(action.title)
             }
         }
     }

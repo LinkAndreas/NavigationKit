@@ -298,7 +298,7 @@ extension NavigationStore {
     func dialog(_ dialog: Dialog, from origin: StackNode) async -> Dialog.Action.ID? {
         let target = origin.topmost
         target.dialog?.finish(nil)
-        emit(.dialogShown(title: dialog.title))
+        emit(.dialogShown(title: dialog.title.key))
         return await withCheckedContinuation { continuation in
             target.dialog = DialogRequest(dialog: dialog, continuation: continuation)
         }

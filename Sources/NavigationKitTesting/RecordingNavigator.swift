@@ -33,9 +33,9 @@ public final class RecordingNavigator: Navigator {
         actions.compactMap { if case let .push(route) = $0 { route } else { nil } }
     }
 
-    /// Answers every dialog with the action whose title is `title`.
+    /// Answers every dialog with the action whose title key is `title`.
     public func answerDialogs(with title: String) {
-        dialogResponse = { dialog in dialog.actions.first { $0.title == title }?.id }
+        dialogResponse = { dialog in dialog.actions.first { $0.title.key == title }?.id }
     }
 
     public func reset() {
