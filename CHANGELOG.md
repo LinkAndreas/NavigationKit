@@ -11,6 +11,13 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+### Added
+
+- Callback forms of the awaited calls, for button actions that shouldn't need a `Task`:
+  `present(_:as:returning:onDismiss:)`, `flow(_:as:returning:onFinish:)`, `flow(_:as:onFinish:)`,
+  `dialog(_:message:style:actions:onDismiss:)` (the chosen action's handler runs),
+  `confirm(…onConfirm:)`, `alert(…onDismiss:)` and `retry(_:title:onRetry:)`. The `async` forms remain.
+
 ## [2.3.0] - 2026-10-01
 
 ### Added
