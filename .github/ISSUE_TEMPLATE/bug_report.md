@@ -12,11 +12,13 @@ A clear description of what's wrong.
 
 ## Reproduction
 
-A minimal `StackNavigator` / `RouteBuilder` setup that reproduces the issue, e.g.:
+A minimal setup that reproduces the issue — ideally a headless `NavigationStore`, e.g.:
 
 ```swift
-let navigator = StackNavigator(root: SomeRoute.root)
+let store = NavigationStore(root: SomeRoute.root)
+store.navigator.push(SomeRoute.detail)
 // ...
+print(store.currentSteps)
 ```
 
 ## Expected behavior
@@ -25,7 +27,7 @@ What you expected to happen.
 
 ## Actual behavior
 
-What happened instead. Include the output of `navigator.debugDescription` if relevant.
+What happened instead. Include `store.currentSteps` and `store.recentEvents` if relevant.
 
 ## Environment
 

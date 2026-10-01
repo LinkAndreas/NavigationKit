@@ -1,31 +1,23 @@
 import NavigationKit
 import SwiftUI
 
-public enum SwagRedemptionRouteBuilder {
+extension SwagRedemptionRoute {
     @MainActor @ViewBuilder
-    public static func resolve(route: SwagRedemptionRoute, navigator: StackNavigator) -> some View {
-        switch route {
+    func body(_ nav: RouteNavigator<MyConfRoute>) -> some View {
+        switch self {
         case .swagSelection:
-            SwagSelectionScreen(
-                onNextTapped: { navigator.push(MyConfRoute.swagRedemption(.shippingAddressEntry)) }
-            )
+            SwagSelectionScreen(onNextTapped: { nav.push(.swagRedemption(.shippingAddressEntry)) })
         case .shippingAddressEntry:
             ShippingAddressEntryScreen(
-                onToInvoiceDataTapped: { navigator.push(MyConfRoute.swagRedemption(.billingDetails)) },
-                onToSummaryTapped: { navigator.push(MyConfRoute.swagRedemption(.summary)) }
+                onToInvoiceDataTapped: { nav.push(.swagRedemption(.billingDetails)) },
+                onToSummaryTapped: { nav.push(.swagRedemption(.summary)) }
             )
         case .billingDetails:
-            BillingDetailsScreen(
-                onNextTapped: { navigator.push(MyConfRoute.swagRedemption(.paymentMethod)) }
-            )
+            BillingDetailsScreen(onNextTapped: { nav.push(.swagRedemption(.paymentMethod)) })
         case .paymentMethod:
-            PaymentMethodScreen(
-                onNextTapped: { navigator.push(MyConfRoute.swagRedemption(.summary)) }
-            )
+            PaymentMethodScreen(onNextTapped: { nav.push(.swagRedemption(.summary)) })
         case .summary:
-            SwagRedemptionSummaryScreen(
-                onBackToDashboardTapped: { navigator.popTo(MyConfRoute.dashboard) }
-            )
+            SwagRedemptionSummaryScreen(onBackToDashboardTapped: { nav.finishFlow() })
         }
     }
 }

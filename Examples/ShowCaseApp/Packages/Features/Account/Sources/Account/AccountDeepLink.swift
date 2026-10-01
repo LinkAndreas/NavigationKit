@@ -1,16 +1,15 @@
 import Foundation
-import NavigationKit
 
 public enum AccountDeepLink {
-    public static func parse(_ segments: [String]) -> StackState? {
+    /// Root-relative routes this feature owns; the app decides where they are mounted.
+    public static func parse(_ segments: [String]) -> [AccountRoute]? {
         guard segments.first == "account" else { return nil }
 
         switch Array(segments.dropFirst()) {
         case []:
-            return StackState(AccountRoute.profile)
+            return [.profile]
         case ["settings"]:
-            return StackState(AccountRoute.profile)
-                .pushing(AccountRoute.settings)
+            return [.profile, .settings]
         default:
             return nil
         }

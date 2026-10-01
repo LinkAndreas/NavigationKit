@@ -1,25 +1,31 @@
 import NavigationKit
 import SwiftUI
 
-public enum DiscoverRouteBuilder {
+/// Discover links to Schedule and Account without importing them: the app injects the
+/// destination routes when it lists this module.
+public struct DiscoverModule<Schedule: Route, Account: Route>: RouteModule {
+    private let scheduleRoute: Schedule
+    private let accountRoute: Account
+
+    public init(scheduleRoute: Schedule, accountRoute: Account) {
+        self.scheduleRoute = scheduleRoute
+        self.accountRoute = accountRoute
+    }
+
     @MainActor
-    public static func register<ScheduleRoute: Hashable, AccountRoute: Hashable>(
-        in registry: RouteBuilder,
-        scheduleRoute: ScheduleRoute,
-        accountRoute: AccountRoute
-    ) {
-        registry.register(DiscoverRoute.self) { route, navigator in
+    public func register(in registry: RouteRegistry) {
+        registry.register { [scheduleRoute, accountRoute] (route: DiscoverRoute, nav) in
             switch route {
             case .discover:
                 DiscoverScreen(
-                    openEventDetails: { navigator.push(DiscoverRoute.eventDetails) },
-                    openKeynoteDetails: { id in navigator.push(DiscoverRoute.keynoteDetails(id: id)) },
-                    openSchedule: { navigator.push(scheduleRoute) },
-                    openAccount: { navigator.present(sheet: accountRoute) }
+                    openEventDetails: { nav.push(.eventDetails) },
+                    openKeynoteDetails: { nav.push(.keynoteDetails(id: $0)) },
+                    openSchedule: { nav.push(scheduleRoute) },
+                    openAccount: { nav.present(accountRoute) }
                 )
             case .eventDetails:
                 EventDetailsScreen()
-            case .keynoteDetails(let id):
+            case let .keynoteDetails(id):
                 KeynoteDetailsScreen(keynoteId: id)
             }
         }

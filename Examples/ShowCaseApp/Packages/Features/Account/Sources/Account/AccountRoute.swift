@@ -1,10 +1,18 @@
-import Foundation
+import NavigationKit
 
-public enum AccountRoute: Hashable {
+public enum AccountRoute: Route {
     case profile
     case personalInformation
     case notifications
     case paymentMethods
     case addPaymentMethod
     case settings
+
+    /// Traits keep call sites to a single verb: `nav.open(.addPaymentMethod)` presents a sheet.
+    public var presentation: PresentationStyle? {
+        switch self {
+        case .addPaymentMethod: .sheet(detents: [.medium, .large])
+        default: nil
+        }
+    }
 }

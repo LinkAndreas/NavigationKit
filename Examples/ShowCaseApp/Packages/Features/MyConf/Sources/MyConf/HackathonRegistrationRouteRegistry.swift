@@ -1,64 +1,51 @@
 import NavigationKit
 import SwiftUI
 
-public enum HackathonRegistrationRouteBuilder {
+extension HackathonRegistrationRoute {
     @MainActor @ViewBuilder
-    public static func resolve(route: HackathonRegistrationRoute, navigator: StackNavigator) -> some View {
-        switch route {
+    func body(_ nav: RouteNavigator<MyConfRoute>) -> some View {
+        switch self {
         case .teamSizeSelection:
             TeamSizeSelectionScreen(
-                onProjectCategorySelectionTapped: {
-                    navigator.push(MyConfRoute.hackathonRegistration(.projectCategorySelection))
-                },
+                onProjectCategorySelectionTapped: { nav.push(.hackathonRegistration(.projectCategorySelection)) },
                 onCancellationTapped: {
-                    navigator.present(alert: AlertSpec(
-                        title: "Cancel Process?",
-                        message: "Are you sure you want to cancel the activity submission? All progress will be lost.",
-                        buttons: [
-                            AlertSpec.Button("No, continue", role: .cancel),
-                            AlertSpec.Button("Yes, cancel", role: .destructive) {
-                                navigator.popTo(MyConfRoute.dashboard)
-                            }
-                        ]
-                    ))
-                }
-            )
-        case .projectCategorySelection:
-            ProjectCategorySelectionScreen(
-                onNextTapped: { navigator.push(MyConfRoute.hackathonRegistration(.teamDetailsForm)) }
-            )
-        case .teamDetailsForm:
-            TeamDetailsFormScreen(
-                onDocumentFlowTapped: { navigator.push(MyConfRoute.hackathonRegistration(.projectUpload(.documentOnly))) },
-                onServiceProviderFlowTapped: { navigator.push(MyConfRoute.hackathonRegistration(.repositoryLinkEntry(.serviceProviderOnly))) },
-                onDocumentOrServiceProviderFlowTapped: { navigator.push(MyConfRoute.hackathonRegistration(.verificationSelection)) },
-                onDocumentAndServiceProviderFlowTapped: { navigator.push(MyConfRoute.hackathonRegistration(.projectUpload(.both))) }
-            )
-        case let .projectUpload(flow):
-            ProjectUploadScreen(
-                flow: flow,
-                onNextTapped: {
-                    if flow == .both {
-                        navigator.push(MyConfRoute.hackathonRegistration(.repositoryLinkEntry(.both)))
-                    } else {
-                        navigator.push(MyConfRoute.hackathonRegistration(.summary))
+                    Task {
+                        let cancel = await nav.confirm(
+                            "Cancel Process?",
+                            message: "Are you sure you want to cancel the activity submission? All progress will be lost.",
+                            confirm: "Yes, cancel",
+                            destructive: true
+                        )
+                        // Backing out of a flow resolves it as abandoned.
+                        if cancel { nav.pop(to: .dashboard) }
                     }
                 }
             )
-        case let .repositoryLinkEntry(flow):
-            RepositoryLinkEntryScreen(
-                flow: flow,
-                onNextTapped: { navigator.push(MyConfRoute.hackathonRegistration(.summary)) }
+        case .projectCategorySelection:
+            ProjectCategorySelectionScreen(onNextTapped: { nav.push(.hackathonRegistration(.teamDetailsForm)) })
+        case .teamDetailsForm:
+            TeamDetailsFormScreen(
+                onDocumentFlowTapped: { nav.push(.hackathonRegistration(.projectUpload(.documentOnly))) },
+                onServiceProviderFlowTapped: { nav.push(.hackathonRegistration(.repositoryLinkEntry(.serviceProviderOnly))) },
+                onDocumentOrServiceProviderFlowTapped: { nav.push(.hackathonRegistration(.verificationSelection)) },
+                onDocumentAndServiceProviderFlowTapped: { nav.push(.hackathonRegistration(.projectUpload(.both))) }
             )
+        case let .projectUpload(requirement):
+            ProjectUploadScreen(
+                flow: requirement,
+                onNextTapped: {
+                    nav.push(.hackathonRegistration(requirement == .both ? .repositoryLinkEntry(.both) : .summary))
+                }
+            )
+        case let .repositoryLinkEntry(requirement):
+            RepositoryLinkEntryScreen(flow: requirement, onNextTapped: { nav.push(.hackathonRegistration(.summary)) })
         case .verificationSelection:
             VerificationSelectionScreen(
-                onDocumentTapped: { navigator.push(MyConfRoute.hackathonRegistration(.projectUpload(.documentOnly))) },
-                onServiceProviderTapped: { navigator.push(MyConfRoute.hackathonRegistration(.repositoryLinkEntry(.serviceProviderOnly))) }
+                onDocumentTapped: { nav.push(.hackathonRegistration(.projectUpload(.documentOnly))) },
+                onServiceProviderTapped: { nav.push(.hackathonRegistration(.repositoryLinkEntry(.serviceProviderOnly))) }
             )
         case .summary:
-            HackathonRegistrationSummaryScreen(
-                onBackToDashboardTapped: { navigator.popTo(MyConfRoute.dashboard) }
-            )
+            HackathonRegistrationSummaryScreen(onBackToDashboardTapped: { nav.finishFlow() })
         }
     }
 }

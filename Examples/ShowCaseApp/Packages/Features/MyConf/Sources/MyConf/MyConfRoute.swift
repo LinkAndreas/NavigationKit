@@ -1,6 +1,6 @@
-import Foundation
+import NavigationKit
 
-public enum SwagRedemptionRoute: Hashable {
+public enum SwagRedemptionRoute: Hashable, Codable, Sendable {
     case swagSelection
     case shippingAddressEntry
     case billingDetails
@@ -8,13 +8,13 @@ public enum SwagRedemptionRoute: Hashable {
     case summary
 }
 
-public enum ProofRequirement: String, Hashable {
+public enum ProofRequirement: String, Hashable, Codable, Sendable {
     case documentOnly = "Document Only"
     case serviceProviderOnly = "Service Provider Only"
     case both = "Both"
 }
 
-public enum HackathonRegistrationRoute: Hashable {
+public enum HackathonRegistrationRoute: Hashable, Codable, Sendable {
     case teamSizeSelection
     case projectCategorySelection
     case teamDetailsForm
@@ -24,7 +24,7 @@ public enum HackathonRegistrationRoute: Hashable {
     case summary
 }
 
-public enum MyConfRoute: Hashable {
+public enum MyConfRoute: Route {
     case overview
     case participationStatement
     case dashboard
@@ -32,4 +32,8 @@ public enum MyConfRoute: Hashable {
     case scanQRCode
     case swagRedemption(SwagRedemptionRoute)
     case hackathonRegistration(HackathonRegistrationRoute)
+
+    public var presentation: PresentationStyle? {
+        if case .scanQRCode = self { .sheet } else { nil }
+    }
 }

@@ -11,6 +11,50 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-01
+
+A redesign around one layout-agnostic `Navigator` and a declarative `NavigationRoot`. See
+[Migrating to 2.0](Documentation/Migration.md).
+
+### Added
+
+- `NavigationKitInterface`: `Route`, `Navigator`, `RouteNavigator`, `Step`, `Dialog`,
+  `PresentationStyle`, `NavigationAction` and `NavigationEvent`, with no SwiftUI dependency.
+- `NavigationRoot` with `RootSection`s and `.layout(.stack | .tabs | .split | .adaptive)`; the sidebar
+  is built in, and sections with a `detail:` get a three-column split view.
+- Scoped navigators: actions bubble to the nearest container that can handle them.
+  `show(_:)` targets the detail column in split layouts and pushes otherwise.
+- One presentation API: `present(_:as:)` with `.sheet`, `.sheet(detents:)`, `.cover`,
+  `.cover(zoomFrom:)`, `.popover`, `.inspector` and `.window` (plus the `RouteWindows` scene).
+- Route traits: `presentation`, `requiresAuth`, `hidesTabBar`; `open(_:)` honors them.
+- `ViewRoute`: routes that render themselves. `RouteModule` and `RouteRegistry` for routes that can't.
+- Awaited results: `present(_:as:returning:)`, `dismiss(returning:)`, `confirm`, `alert`, `retry`, `dialog`.
+  Dialog texts are `LocalizedStringResource`s, and dialog builders list `Dialog.Action`s by initializer.
+- Flows: `flow(_:as:returning:)` and `finishFlow(returning:)`, unwinding exactly the flow's screens.
+- `navigationGuard(when:…)` for unsaved changes, enforced for back, dismiss, tab switches and deep links.
+- `authGate(isAuthenticated:login:)`.
+- Layout-independent paths: `navigate(_:)` with an array of steps, `DeepLinks`, `NavigationStore.currentSteps`.
+- `NavigationSnapshot` (`Codable`, versioned, lossy decoding), `.restoration(_:)`, `.handoff(activityType:)`.
+- `NavigationEvent` stream: `onNavigationEvent(_:)`, `NavigationStore.events()`.
+- `NavigationKitTesting` with `RecordingNavigator`; `NavigationStore` works headless.
+- `RouteLink`, `navigationZoomSource(_:)`, and `ViewRoute.preview()` / `Route.preview(using:)`.
+- Duplicate-push protection.
+
+### Changed
+
+- **Breaking:** routes conform to `Route` (`Hashable`, `Codable`, `Sendable`) instead of `Hashable`.
+- **Breaking:** `NavigationKitDebug` is now an overlay with a draggable button
+  (`NavigationRoot.navigationDebugger()`) instead of a separate debugger window.
+- Nested presentations are sequenced on appear/disappear callbacks instead of a fixed delay, and
+  presentations at launch (restoration, deep links) wait until the scene is active.
+
+### Removed
+
+- **Breaking:** `StackNavigator`, `TabsNavigator`, `SplitNavigator`, `AdaptiveNavigator`, `RootNavigator`,
+  `NavigationContainer`, `RouteBuilder`, `ModalPresenter`, `AlertSpec`, `StackState`, `TabsState`,
+  `SplitState`, `SplitVisibility`, `SidebarColumnWidth`, `NavigationState`, `DeeplinkResolver` and
+  `applyDeepLink`. Split-view column widths and visibility are not configurable in 2.0.0 yet.
+
 ## [1.5.0] - 2026-09-23
 
 ### Added
@@ -227,7 +271,8 @@ because each one is a published tag you can pin to.
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.6...v1.4.0
 [1.3.6]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.5...v1.3.6
