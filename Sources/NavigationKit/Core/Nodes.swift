@@ -101,6 +101,9 @@ final class StackNode: Identifiable {
 
     var entries: [Entry] { [rootEntry] + path }
 
+    /// Whether this stack is a column of a `NavigationSplitView` right now.
+    var isSplitColumn: Bool { section != nil && store?.usesSplitLayout == true }
+
     /// The stack the user is looking at when starting from this one: follows presented modals.
     var topmost: StackNode {
         var stack = self

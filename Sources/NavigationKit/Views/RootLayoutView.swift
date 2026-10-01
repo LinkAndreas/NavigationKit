@@ -49,9 +49,14 @@ struct RootLayoutView: View {
         }
     }
 
-    @ViewBuilder
     private var split: some View {
         let section = store.selectedSection
+        return splitView(section)
+            .modifier(InspectorPresentationModifier(stacks: [section.main] + [section.detail].compactMap { $0 }))
+    }
+
+    @ViewBuilder
+    private func splitView(_ section: SectionNode) -> some View {
         if let detail = section.detail {
             NavigationSplitView(columnVisibility: $columnVisibility) {
                 sidebar

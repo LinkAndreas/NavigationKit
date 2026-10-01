@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Attaches every presentation style to a stack, each bound to the stack's single modal slot.
+/// Attaches the sheet, cover and popover styles to a stack, each bound to its single modal slot.
 struct ModalPresentationModifier: ViewModifier {
     let stack: StackNode
 
@@ -16,30 +16,63 @@ struct ModalPresentationModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
+        // Inspectors are attached by `InspectorPresentationModifier`, which handles split columns.
         content
             .sheet(item: binding(.sheet)) { ModalContentView(modal: $0) }
             #if os(iOS)
             .fullScreenCover(item: binding(.cover)) { ModalContentView(modal: $0) }
             #endif
             .popover(item: binding(.popover)) { ModalContentView(modal: $0) }
-            .inspector(isPresented: Binding(
-                get: { binding(.inspector).wrappedValue != nil },
-                set: { if !$0 { binding(.inspector).wrappedValue = nil } }
-            )) {
-                if let modal = binding(.inspector).wrappedValue {
-                    ModalContentView(modal: modal)
-                }
-            }
     }
 }
 
-/// Presents the stack's pending `Dialog` as an alert or confirmation dialog.
+/// Shows an `.inspector` modal presented by any of `stacks`.
+///
+/// Inside a split view, an inspector must not wrap a column's `NavigationStack`: it re-hosts what
+/// it wraps, so pushes past the first screen stop rendering, and sheets attached inside it lose
+/// their window. Split columns therefore get their inspector on the `NavigationSplitView` (a
+/// trailing column); every other stack gets it directly.
+struct InspectorPresentationModifier: ViewModifier {
+    let stacks: [StackNode]
+
+    private var modal: ModalNode? {
+        stacks.lazy.compactMap { $0.modal }.first { $0.effectiveKind == .inspector }
+    }
+
+    func body(content: Content) -> some View {
+        if stacks.isEmpty {
+            content
+        } else {
+            content.inspector(isPresented: Binding(
+                get: { modal != nil },
+                set: { presented in
+                    guard !presented, let modal, let store = modal.presenter?.store else { return }
+                    store.closeModal(modal, result: nil)
+                }
+            )) {
+                if let modal {
+                    ModalContentView(modal: modal)
+                }
+            }
+        }
+    }
+}
+
+/// Presents the stack's pending `Dialog` as an alert or confirmation dialog from its top screen.
+///
+/// Attached per screen, inside the `NavigationStack`: attached around the stack, alerts from pushed
+/// screens never appear in a two-column split view on iPad.
 struct DialogPresentationModifier: ViewModifier {
     let stack: StackNode
+    let entryID: Entry.ID
+
+    private var request: DialogRequest? {
+        stack.entries.last?.id == entryID ? stack.dialog : nil
+    }
 
     private func isPresented(_ style: Dialog.Style) -> Binding<Bool> {
         Binding(
-            get: { stack.dialog?.dialog.style == style },
+            get: { request?.dialog.style == style },
             set: { presented in
                 guard !presented, let request = stack.dialog, request.dialog.style == style else { return }
                 // Button actions run before this setter settles; resolve as "dismissed" only if
@@ -54,7 +87,7 @@ struct DialogPresentationModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        let request = stack.dialog
+        let request = request
         let title = request.map { Text($0.dialog.title) } ?? Text(verbatim: "")
         content
             .alert(title, isPresented: isPresented(.alert), presenting: request) { request in

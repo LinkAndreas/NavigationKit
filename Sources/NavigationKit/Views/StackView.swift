@@ -21,8 +21,8 @@ struct StackView: View {
                     ScreenView(entry: entry, stack: stack)
                 }
         }
+        .modifier(InspectorPresentationModifier(stacks: stack.isSplitColumn ? [] : [stack]))
         .modifier(ModalPresentationModifier(stack: stack))
-        .modifier(DialogPresentationModifier(stack: stack))
     }
 }
 
@@ -37,6 +37,7 @@ struct ScreenView: View {
         RouteRegistry.resolve(entry.route, navigator: navigator, registry: registry)
             .environment(\.navigator, navigator)
             .environment(\.screenContext, ScreenContext(stack: stack, entryID: entry.id, isRoot: entry.id == stack.rootEntry.id))
+            .modifier(DialogPresentationModifier(stack: stack, entryID: entry.id))
             #if os(iOS)
             .toolbar(entry.route.hidesTabBar ? .hidden : .automatic, for: .tabBar)
             #endif
