@@ -19,7 +19,7 @@ public final class NavigationStore {
     // MARK: State
 
     private(set) var sections: [SectionNode]
-    private(set) var selectionIndex: Int
+    var selectionIndex: Int
     public private(set) var recentEvents: [NavigationEvent] = []
 
     // MARK: Configuration (set by NavigationRoot; not observed)
