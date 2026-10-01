@@ -11,7 +11,7 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-01
 
 A redesign around one layout-agnostic `Navigator` and a declarative `NavigationRoot`. See
 [Migrating to 2.0](Documentation/Migration.md).
@@ -29,10 +29,11 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
 - Route traits: `presentation`, `requiresAuth`, `hidesTabBar`; `open(_:)` honors them.
 - `ViewRoute`: routes that render themselves. `RouteModule` and `RouteRegistry` for routes that can't.
 - Awaited results: `present(_:as:returning:)`, `dismiss(returning:)`, `confirm`, `alert`, `retry`, `dialog`.
+  Dialog texts are `LocalizedStringResource`s, and dialog builders list `Dialog.Action`s by initializer.
 - Flows: `flow(_:as:returning:)` and `finishFlow(returning:)`, unwinding exactly the flow's screens.
 - `navigationGuard(when:…)` for unsaved changes, enforced for back, dismiss, tab switches and deep links.
 - `authGate(isAuthenticated:login:)`.
-- Layout-independent paths: `navigate(_:)`, `DeepLinks`, `NavigationStore.currentSteps`.
+- Layout-independent paths: `navigate(_:)` with an array of steps, `DeepLinks`, `NavigationStore.currentSteps`.
 - `NavigationSnapshot` (`Codable`, versioned, lossy decoding), `.restoration(_:)`, `.handoff(activityType:)`.
 - `NavigationEvent` stream: `onNavigationEvent(_:)`, `NavigationStore.events()`.
 - `NavigationKitTesting` with `RecordingNavigator`; `NavigationStore` works headless.
@@ -42,9 +43,10 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
 ### Changed
 
 - **Breaking:** routes conform to `Route` (`Hashable`, `Codable`, `Sendable`) instead of `Hashable`.
-- **Breaking:** `NavigationKitDebug` is now an overlay (`NavigationRoot.navigationDebugger()`) instead of
-  a separate debugger window.
-- Nested presentations are sequenced on appear/disappear callbacks instead of a fixed delay.
+- **Breaking:** `NavigationKitDebug` is now an overlay with a draggable button
+  (`NavigationRoot.navigationDebugger()`) instead of a separate debugger window.
+- Nested presentations are sequenced on appear/disappear callbacks instead of a fixed delay, and
+  presentations at launch (restoration, deep links) wait until the scene is active.
 
 ### Removed
 
@@ -269,7 +271,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.5.0...v2.0.0
 [1.5.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.6...v1.4.0
 [1.3.6]: https://github.com/LinkAndreas/NavigationKit/compare/v1.3.5...v1.3.6
