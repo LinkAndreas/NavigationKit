@@ -74,7 +74,16 @@ struct RootLayoutView: View {
         }
     }
 
+    @ViewBuilder
     private var sidebar: some View {
+        if let customSidebar = store.customSidebar as? CustomSidebar {
+            customSidebar.content(store)
+        } else {
+            builtInSidebar
+        }
+    }
+
+    private var builtInSidebar: some View {
         List(selection: Binding<Int?>(
             get: { store.selectionIndex },
             set: { if let index = $0 { store.userSelect(index) } }
