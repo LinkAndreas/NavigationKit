@@ -10,6 +10,14 @@ import Foundation
 ///     ScheduleRoute.placeholder   // the detail column in a split view
 /// }
 /// ```
+///
+/// Roots are `any Route`, so sections can come from data whose tabs use different route types:
+///
+/// ```swift
+/// for tab in tabs {
+///     RootSection(tab.id, tab.title, icon: tab.icon) { tab.route }   // tab.route: any Route
+/// }
+/// ```
 public struct RootSection {
     let id: AnySectionID
     let title: LocalizedStringResource
@@ -17,21 +25,21 @@ public struct RootSection {
     let root: AnyRoute
     let detail: AnyRoute?
 
-    public init<ID: Hashable & Sendable, Root: Route>(
+    public init<ID: Hashable & Sendable>(
         _ id: ID,
         _ title: LocalizedStringResource,
         icon: String? = nil,
-        root: () -> Root
+        root: () -> any Route
     ) {
         self.init(id: AnySectionID(id), title: title, icon: icon, root: AnyRoute(root()), detail: nil)
     }
 
-    public init<ID: Hashable & Sendable, Root: Route, Detail: Route>(
+    public init<ID: Hashable & Sendable>(
         _ id: ID,
         _ title: LocalizedStringResource,
         icon: String? = nil,
-        root: () -> Root,
-        detail: () -> Detail
+        root: () -> any Route,
+        detail: () -> any Route
     ) {
         self.init(id: AnySectionID(id), title: title, icon: icon, root: AnyRoute(root()), detail: AnyRoute(detail()))
     }
