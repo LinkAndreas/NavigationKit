@@ -104,14 +104,20 @@ public extension Navigator {
     /// Replaces the current location with `steps`, starting from the selected section's root.
     func navigate(_ steps: [Step]) { perform(.navigate(steps)) }
 
-    func navigate(@StepsBuilder _ steps: () -> [Step]) { perform(.navigate(steps())) }
-
     /// Opens a deep link through the app's deep-link handler.
     @discardableResult
     func open(_ url: URL) -> Bool { perform(.openURL(url)) }
 
     // MARK: Dialogs
 
+    /// Shows a dialog built from its actions and returns the chosen action's ID.
+    ///
+    /// ```swift
+    /// let choice = await nav.dialog("Delete draft?", style: .confirmation) {
+    ///     Dialog.Action("Delete", role: .destructive)
+    ///     Dialog.Action("Cancel", role: .cancel)
+    /// }
+    /// ```
     func dialog(
         _ title: String,
         message: String? = nil,

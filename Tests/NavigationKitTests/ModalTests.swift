@@ -69,4 +69,20 @@ struct ModalTests {
 
         #expect(await confirmed)
     }
+
+    @Test func dialogBuilderReturnsCancelIDForCancelRole() async {
+        let store = NavigationStore(root: HomeRoute.feed)
+        async let choice = store.navigator.dialog("Share", style: .confirmation) {
+            Dialog.Action("Copy Link", id: "copy")
+            Dialog.Action("Close", role: .cancel)
+        }
+        await settle()
+
+        let stack = store.sections[0].main
+        let request = try! #require(stack.dialog)
+        #expect(request.dialog.actions.map(\.id) == ["copy", Dialog.Action.cancelID])
+        store.resolveDialog(on: stack, with: request.dialog.actions[1])
+
+        #expect(await choice == Dialog.Action.cancelID)
+    }
 }

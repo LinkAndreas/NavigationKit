@@ -5,10 +5,10 @@ import Foundation
 /// ``Navigator/navigate(_:)`` and `NavigationStore/currentSteps` all speak this language.
 ///
 /// ```swift
-/// nav.navigate {
-///     .select(AppTab.schedule)
-///     .push(ScheduleRoute.session(id: "42"))
-/// }
+/// nav.navigate([
+///     .select(AppTab.schedule),
+///     .push(ScheduleRoute.session(id: "42")),
+/// ])
 /// ```
 public enum Step: Hashable, Sendable, CustomStringConvertible {
     /// Select a top-level section and reset it to its root.
@@ -35,15 +35,4 @@ public enum Step: Hashable, Sendable, CustomStringConvertible {
         case let .show(route): ".show(\(route))"
         }
     }
-}
-
-@resultBuilder
-public enum StepsBuilder {
-    public static func buildExpression(_ step: Step) -> [Step] { [step] }
-    public static func buildExpression(_ steps: [Step]) -> [Step] { steps }
-    public static func buildBlock(_ parts: [Step]...) -> [Step] { parts.flatMap { $0 } }
-    public static func buildOptional(_ part: [Step]?) -> [Step] { part ?? [] }
-    public static func buildEither(first: [Step]) -> [Step] { first }
-    public static func buildEither(second: [Step]) -> [Step] { second }
-    public static func buildArray(_ parts: [[Step]]) -> [Step] { parts.flatMap { $0 } }
 }

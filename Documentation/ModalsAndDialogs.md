@@ -82,11 +82,13 @@ while true {
 }
 
 let choice = await nav.dialog("Share", style: .confirmation) {
-    .default("Copy Link", id: "copy")
-    .default("Message", id: "message")
-    .cancel()
+    Dialog.Action("Copy Link", id: "copy")
+    Dialog.Action("Message", id: "message")
+    Dialog.Action("Cancel", role: .cancel)
 }
 ```
+
+Inside the builder, write each action with its initializer, as you would a `Button` in a SwiftUI alert. The `.default`, `.cancel` and `.destructive` shortcuts are for array literals (`Dialog(title, actions: [.destructive("Delete"), .cancel()])`): on consecutive builder lines, Swift would chain them into a single call.
 
 `Dialog` and `Dialog.Action` contain no SwiftUI types, so view models in `NavigationKitInterface`-only modules can use them. Actions may also carry a handler for callers that prefer not to await.
 

@@ -6,10 +6,14 @@ import Foundation
 ///
 /// ```swift
 /// let choice = await nav.dialog(Dialog("Delete draft?", style: .confirmation) {
-///     .destructive("Delete")
-///     .cancel()
+///     Dialog.Action("Delete", role: .destructive)
+///     Dialog.Action("Cancel", role: .cancel)
 /// })
 /// ```
+///
+/// Inside the builder, write each action with its initializer, like a `Button` in a SwiftUI
+/// alert. The `.default`, `.cancel` and `.destructive` shortcuts are for array literals, where
+/// commas separate them; on consecutive builder lines Swift would chain them into one call.
 ///
 /// Most call sites use the shortcuts ``Navigator/confirm(_:message:confirm:destructive:)``,
 /// ``Navigator/alert(_:message:)`` and ``Navigator/retry(_:)`` instead.
@@ -30,7 +34,8 @@ public struct Dialog: Identifiable, Sendable {
         let handler: (@MainActor @Sendable () -> Void)?
 
         /// - Parameters:
-        ///   - id: What the awaiting call returns when this action is chosen. Defaults to `title`.
+        ///   - id: What the awaiting call returns when this action is chosen. Defaults to `title`,
+        ///     or ``cancelID`` for the cancel role.
         ///   - handler: Optional side effect, for callers that prefer not to await.
         public init(
             _ title: String,
@@ -38,7 +43,7 @@ public struct Dialog: Identifiable, Sendable {
             id: String? = nil,
             handler: (@MainActor @Sendable () -> Void)? = nil
         ) {
-            self.id = id ?? title
+            self.id = id ?? (role == .cancel ? Action.cancelID : title)
             self.title = title
             self.role = role
             self.handler = handler
@@ -49,7 +54,7 @@ public struct Dialog: Identifiable, Sendable {
         }
 
         public static func cancel(_ title: String = "Cancel", handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {
-            Action(title, role: .cancel, id: Action.cancelID, handler: handler)
+            Action(title, role: .cancel, handler: handler)
         }
 
         public static func destructive(_ title: String, id: String? = nil, handler: (@MainActor @Sendable () -> Void)? = nil) -> Action {

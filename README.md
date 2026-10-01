@@ -52,7 +52,7 @@ enum ScheduleRoute: ViewRoute {
 - **Screens don't know their layout.** A navigator is scoped to the screen that receives it; actions travel up the tree to whichever container can handle them. The same feature works in a tab, a sidebar, a sheet or a window.
 - **One verb per intent.** `present(route, as: .sheet(detents: [.medium]))` instead of a modifier per presentation type. Routes can declare traits (`presentation`, `requiresAuth`, `hidesTabBar`), so most call sites are just `nav.open(route)`.
 - **Results are awaited, not wired.** `let color = await nav.present(.picker, returning: Color.self)`, `if await nav.confirm("Delete?") { … }`, multi-step flows that `finishFlow(returning:)` and unwind exactly their own screens.
-- **Layout-independent paths.** Deep links, `navigate {…}`, restoration and test assertions all use the same `[Step]` language — no branching on tabs vs. split.
+- **Layout-independent paths.** Deep links, `navigate(_:)`, restoration and test assertions all use the same `[Step]` language — no branching on tabs vs. split.
 - **No SwiftUI in your models.** The `NavigationKitInterface` target has routes, the `Navigator` protocol, steps and dialogs; view models and route-contract packages depend on it alone.
 - **No timing hacks.** Nested presentations are sequenced on real appear/disappear signals.
 
@@ -164,10 +164,10 @@ let card = await nav.present(PaymentRoute.add, returning: Card.self)
 if await nav.confirm("Discard changes?", confirm: "Discard", destructive: true) { nav.pop() }
 let order = await nav.flow(CheckoutRoute.cart, returning: Order.self)
 
-nav.navigate {
-    .select(AppTab.schedule)
-    .push(ScheduleRoute.session(id: "42"))
-}
+nav.navigate([
+    .select(AppTab.schedule),
+    .push(ScheduleRoute.session(id: "42")),
+])
 ```
 
 ### 4. Test without views

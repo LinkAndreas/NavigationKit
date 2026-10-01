@@ -15,7 +15,7 @@ A deep link resolves to a list of `Step`s — a path that doesn't depend on the 
 | `.show(route)` | Detail column in a split layout, push otherwise |
 | `.present(route, as: style)` | Present; later steps apply inside the modal |
 
-The same steps drive `nav.navigate {…}`, restoration and test assertions (`store.currentSteps`).
+The same steps drive `nav.navigate(_:)`, restoration and test assertions (`store.currentSteps`).
 
 ## Handling URLs
 

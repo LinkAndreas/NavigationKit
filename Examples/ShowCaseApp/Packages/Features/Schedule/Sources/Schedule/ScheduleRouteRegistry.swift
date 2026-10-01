@@ -37,8 +37,8 @@ public struct ScheduleModule: RouteModule {
                                 "Added to MyConf",
                                 message: "This session has been saved to your personal schedule."
                             ) {
-                                .default("view_saved_sessions", id: "saved")
-                                .cancel("OK")
+                                Dialog.Action("view_saved_sessions", id: "saved")
+                                Dialog.Action("OK", role: .cancel)
                             }
                             if choice == "saved", let url = URL(string: "navigator://myconf/savedSessions") {
                                 nav.open(url)
