@@ -18,9 +18,6 @@
 
 ---
 
-`NavigationKit` models your app's entire navigation hierarchy — stacks, tabs, split views, sheets, full-screen covers, alerts, and confirmation dialogs — as plain, observable, serializable state, so screens never reach for `NavigationLink`, `.sheet`, or `.fullScreenCover` directly.
-
-
 `NavigationKit` gives every screen one small, layout-agnostic API — `push`, `present`, `show`, `select`, `dismiss` — and builds the right SwiftUI containers around it: a stack, a tab bar, a sidebar with detail, or all of them adaptively. Navigation state is plain `Codable` data, so deep links, state restoration, Handoff and tests all fall out for free.
 
 ```swift
@@ -77,7 +74,7 @@ Add `NavigationKit` to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "2.0.0")
+    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "2.1.0")
 ]
 ```
 
@@ -155,20 +152,12 @@ NavigationRoot(selection: AppTab.speakers) {
 
 ```swift
 nav.push(.detail(id: "s1"))
-nav.present(ProfileRoute.edit, as: .cover(zoomFrom: "avatar"))
 nav.show(.detail(id: "s1"))                 // split detail column, or push in compact width
-nav.select(AppTab.account)
-nav.dismiss(returning: newValue)
-
-let card = await nav.present(PaymentRoute.add, returning: Card.self)
+nav.open(.contact(email: "a@b.c"))          // push or present, per the route's trait
 if await nav.confirm("Discard changes?", confirm: "Discard", destructive: true) { nav.pop() }
-let order = await nav.flow(CheckoutRoute.cart, returning: Order.self)
-
-nav.navigate([
-    .select(AppTab.schedule),
-    .push(ScheduleRoute.session(id: "42")),
-])
 ```
+
+The [cheat sheet](#-cheat-sheet) below lists everything else.
 
 ### 4. Test without views
 
@@ -179,6 +168,184 @@ nav.navigate([
     #expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
 }
 ```
+
+---
+
+## 📋 Cheat Sheet
+
+### Routes and traits
+
+```swift
+enum ScheduleRoute: Route {                      // Route = Hashable + Codable + Sendable
+    case list, placeholder, session(id: String), filter
+
+    var presentation: PresentationStyle? {       // used by open(_:)
+        if case .filter = self { .sheet(detents: [.medium]) } else { nil }
+    }
+    var hidesTabBar: Bool { if case .session = self { true } else { false } }
+    var requiresAuth: Bool { false }
+}
+```
+
+### Root
+
+```swift
+NavigationRoot(selection: AppTab.home) {
+    RootSection(AppTab.home, "Home", icon: "house") { HomeRoute.feed }
+    RootSection(AppTab.schedule, "Schedule", icon: "calendar") {
+        ScheduleRoute.list
+    } detail: {                                   // three columns in regular width
+        ScheduleRoute.placeholder
+    }
+}
+.layout(.adaptive)            // .stack | .tabs | .split | .adaptive
+.routes(ScheduleModule())     // only for routes that aren't ViewRoutes
+.deepLinks(AppLinks.self)
+.restoration(.sceneStorage("nav"))
+.onNavigationEvent { Analytics.track($0) }
+.navigationDebugger()         // NavigationKitDebug
+```
+
+- Single stack: `NavigationRoot(HomeRoute.feed)`
+- A store you own (navigate from outside the views, or in tests): `NavigationRoot(store: store)`
+- Your own sidebar: `NavigationRoot(selection: Tab.a) { … } sidebar: { selection in MySidebar(selection: selection) }`
+
+### Screens for routes
+
+**`ViewRoute`** — the route draws itself; no dependencies, no registration:
+
+```swift
+extension SpeakersRoute: ViewRoute {
+    func body(_ nav: RouteNavigator<SpeakersRoute>) -> some View {
+        switch self {
+        case .list: ListScreen(onTap: { nav.push(.detail(id: $0)) })
+        case let .detail(id): DetailScreen(id: id)
+        }
+    }
+}
+```
+
+**`RouteModule`** — screens that need injected stores, view models, or other features' routes:
+
+```swift
+struct ScheduleModule: RouteModule {
+    let store: ScheduleStore
+
+    func register(in registry: RouteRegistry) {
+        registry.register { (route: ScheduleRoute, nav) in
+            SessionView(store: store, onSpeaker: { nav.push(SpeakersRoute.detail(id: $0)) })
+        }
+    }
+}
+```
+
+Deep inside a view tree, `@Environment(\.navigator) var nav` gives the screen's navigator.
+
+### Navigating
+
+```swift
+nav.push(.detail(id: "1"))
+nav.pop(); nav.popToRoot(); nav.pop(to: .list)            // pop(to:) returns Bool
+nav.open(.filter)                                          // push or present, per the trait
+nav.show(.session(id: "1"))                                // detail column in split; push otherwise
+nav.select(AppTab.schedule)                                // switch tab or sidebar section
+nav.navigate([.select(AppTab.schedule), .show(ScheduleRoute.session(id: "42"))])
+nav.open(URL(string: "myapp://schedule/session/42")!)
+```
+
+`navigate(_:)` replaces the current location: it asks the guards of everything it would discard,
+dismisses open modals, resets the section to its root, then applies the steps in order — each one
+inside whatever the previous step opened.
+
+### Modals and results
+
+```swift
+nav.present(.filter)                          // the trait, else a sheet
+nav.present(.player, as: .cover)              // .sheet, .sheet(detents:), .cover, .cover(zoomFrom:),
+                                              // .popover, .inspector, .window
+nav.dismiss()
+
+let card = await nav.present(PaymentRoute.add, returning: Card.self)   // nil if swiped away
+nav.dismiss(returning: card)                                            // in the presented screen
+```
+
+For a zoom transition, mark the source with `.navigationZoomSource("photo-1")` and present with
+`.cover(zoomFrom: "photo-1")`. `.window` needs a `RouteWindows(...)` scene and falls back to a sheet.
+
+### Dialogs
+
+Texts are `LocalizedStringResource`s, looked up in your string catalog.
+
+```swift
+if await nav.confirm("Delete?", message: "…", confirm: "Delete", destructive: true) { … }
+await nav.alert("Saved")
+if await nav.retry(error) { … }
+
+let choice = await nav.dialog("Share", style: .confirmation) {
+    Dialog.Action("Copy Link", id: "copy")
+    Dialog.Action("Cancel", role: .cancel)
+}
+if choice == "copy" { … }
+```
+
+### Flows, guards and auth
+
+```swift
+let order = await nav.flow(CheckoutRoute.cart, returning: Order.self)   // nil if the user backs out
+nav.finishFlow(returning: order)       // unwinds exactly the flow's screens
+
+FormScreen()
+    .navigationGuard(when: hasChanges)                          // built-in "Discard changes?"
+    .navigationGuard(when: hasChanges) { await askToSave() }    // or your own check
+```
+
+Guards cover back, swipe-to-dismiss, tab switches with modals open, and deep links.
+`.authGate(isAuthenticated: { session.isLoggedIn }, login: AuthRoute.login)` on the root presents
+the login before any route with `requiresAuth`, then continues once it's dismissed with `true`.
+
+### Deep links and restoration
+
+```swift
+enum AppLinks: DeepLinks {
+    static func steps(for url: URL) -> [Step]? {
+        guard url.segments.first == "schedule", let id = url.segments.last else { return nil }
+        return [.select(AppTab.schedule), .show(ScheduleRoute.session(id: id))]
+    }
+}
+```
+
+- Restoration: `.restoration(.sceneStorage("nav") | .userDefaults("nav") | .custom(load:save:))`
+- Handoff: `.handoff(activityType: "com.example.view")`
+- State as data: `store.snapshot` (`Codable`), `await store.restore(snapshot)`, `store.currentSteps`
+
+### Testing
+
+```swift
+// A screen's or view model's logic, without views.
+let nav = RecordingNavigator()
+model.didSelect("s1", nav: nav)
+#expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
+nav.answerDialogs(with: "Delete")           // or nav.dialogResponse = { … }
+nav.results[AnyRoute(PaymentRoute.add)] = card
+
+// The whole app's navigation, headless.
+let store = NavigationStore(layout: .adaptive, selection: AppTab.home, sections: [...])
+await store.navigate([.select(AppTab.schedule), .push(ScheduleRoute.list)])
+#expect(store.currentSteps == [.select(AppTab.schedule), .push(ScheduleRoute.list)])
+```
+
+### Good to know
+
+- `navigate` takes an array of steps; there is no builder for it.
+- In dialog builders, write `Dialog.Action(…)` initializers. The `.default`/`.cancel`/`.destructive`
+  shortcuts are for array literals — on consecutive builder lines Swift chains them into one call.
+- Section ids must be `Hashable & Sendable`. In an app target that defaults to `MainActor`
+  isolation, mark routes and section-id enums `nonisolated`.
+- With `MemberImportVisibility`, files that pass `LocalizedStringResource` (section titles, dialog
+  texts) need `import Foundation`.
+- `show` replaces the detail column in split layouts; use `push` to go deeper in the same column.
+- Split-view column widths and visibility aren't configurable yet; size a custom sidebar with
+  `.navigationSplitViewColumnWidth`.
 
 ---
 
@@ -200,7 +367,7 @@ The full API reference is published as DocC.
 
 ## 🧩 ShowCase App
 
-[`ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `ShowCaseApp.xcproject` and run the `ShowCaseApp` scheme. 
+[`ShowCaseApp`](Examples/ShowCaseApp) is a multi-module conference app that exercises the whole framework. Open `ShowCaseApp.xcodeproj` and run the `ShowCaseApp` scheme.
 
 ### iPhone
 
