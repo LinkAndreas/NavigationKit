@@ -34,3 +34,14 @@ Script async answers: `nav.results[AnyRoute(PickerRoute.color)] = Color.red` for
 ```
 
 `currentSteps` speaks the same language as `navigate` and deep links, so assertions read like the navigation they test. `store.recentEvents` holds the last 100 events.
+
+## Every route has a screen
+
+```swift
+@Test @MainActor func everyRouteHasAScreen() {
+    let registry = RouteRegistry(AppComposition.modules)
+    #expect(registry.missingViews(for: [ScheduleRoute.self, SpeakersRoute.self]).isEmpty)
+}
+```
+
+See [Routes & Modules](RoutesAndModules.md#checking-that-every-route-has-a-screen).

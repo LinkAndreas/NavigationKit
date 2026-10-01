@@ -67,6 +67,24 @@ public final class RouteRegistry {
         }
     }
 
+    /// The route types among `types` that would show the "Unregistered route" placeholder: neither
+    /// registered here nor ``ViewRoute``s. Returned as their ``Route/routeKey``s, for readable test
+    /// failures.
+    ///
+    /// ```swift
+    /// @Test func everyRouteHasAScreen() {
+    ///     let registry = RouteRegistry(AppComposition.modules)
+    ///     #expect(registry.missingViews(for: [ScheduleRoute.self, SpeakersRoute.self]).isEmpty)
+    /// }
+    /// ```
+    public func missingViews(for types: [any Route.Type]) -> [String] {
+        types.filter { !hasView(for: $0) }.map { $0.routeKey }
+    }
+
+    private func hasView(for type: any Route.Type) -> Bool {
+        builders[type.routeKey] != nil || type is any ViewRoute.Type
+    }
+
     func view(for route: AnyRoute, navigator: any Navigator) -> AnyView? {
         builders[type(of: route.base).routeKey]?(route, navigator)
     }
@@ -91,6 +109,36 @@ public protocol RouteModule {
 public extension RouteModule {
     var routeTypes: [any Route.Type] { [] }
     @MainActor func register(in registry: RouteRegistry) {}
+}
+
+/// A module that provides the screens for exactly one route type, as an exhaustive `switch`: a
+/// new case without a screen is a compile error, and the module can't register the wrong type.
+/// ``RouteModule/register(in:)`` and ``RouteModule/routeTypes`` are provided.
+///
+/// ```swift
+/// struct ScheduleModule: TypedRouteModule {
+///     let store: ScheduleStore
+///
+///     func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+///         switch route {
+///         case .list: ScheduleList(store: store, onSelect: { nav.show(.session(id: $0)) })
+///         case let .session(id): SessionDetail(store: store, id: id)
+///         }
+///     }
+/// }
+/// ```
+public protocol TypedRouteModule: RouteModule {
+    associatedtype RouteType: Route
+    associatedtype Screen: View
+    @MainActor @ViewBuilder func body(for route: RouteType, nav: RouteNavigator<RouteType>) -> Screen
+}
+
+public extension TypedRouteModule {
+    var routeTypes: [any Route.Type] { [RouteType.self] }
+
+    @MainActor func register(in registry: RouteRegistry) {
+        registry.register(RouteType.self) { route, nav in body(for: route, nav: nav) }
+    }
 }
 
 extension Route {

@@ -225,19 +225,23 @@ extension SpeakersRoute: ViewRoute {
 }
 ```
 
-**`RouteModule`** — screens that need injected stores, view models, or other features' routes:
+**`TypedRouteModule`** — screens that need injected stores, view models, or other features' routes.
+The `switch` must be exhaustive, so a new case without a screen won't compile:
 
 ```swift
-struct ScheduleModule: RouteModule {
+struct ScheduleModule: TypedRouteModule {
     let store: ScheduleStore
 
-    func register(in registry: RouteRegistry) {
-        registry.register { (route: ScheduleRoute, nav) in
-            SessionView(store: store, onSpeaker: { nav.push(SpeakersRoute.detail(id: $0)) })
+    func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+        switch route {
+        case .list: ScheduleList(store: store, onSelect: { nav.show(.session(id: $0)) })
+        case let .session(id): SessionView(store: store, onSpeaker: { nav.push(SpeakersRoute.detail(id: $0)) })
         }
     }
 }
 ```
+
+For several route types in one module, conform to `RouteModule` and call `registry.register { (route: R, nav) in … }` per type.
 
 Deep inside a view tree, `@Environment(\.navigator) var nav` gives the screen's navigator.
 
@@ -327,6 +331,9 @@ model.didSelect("s1", nav: nav)
 #expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
 nav.answerDialogs(with: "Delete")           // or nav.dialogResponse = { … }
 nav.results[AnyRoute(PaymentRoute.add)] = card
+
+// Every route has a screen (catches a module missing from .routes(…)).
+#expect(RouteRegistry(appModules).missingViews(for: [ScheduleRoute.self, SpeakersRoute.self]).isEmpty)
 
 // The whole app's navigation, headless.
 let store = NavigationStore(layout: .adaptive, selection: AppTab.home, sections: [...])
