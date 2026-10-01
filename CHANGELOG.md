@@ -11,6 +11,15 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-01
+
+### Added
+
+- `TypedRouteModule`: a module for one route type whose screens are an exhaustive `switch`, so a new
+  case without a screen is a compile error. `register(in:)` and `routeTypes` are provided.
+- `RouteRegistry.missingViews(for:)`: lists route types that are neither registered nor `ViewRoute`s,
+  for a test that fails when a module is missing from `.routes(…)`.
+
 ## [2.2.0] - 2026-10-01
 
 ### Changed
@@ -306,7 +315,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.2...v2.2.0
 [2.1.2]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.0...v2.1.1
