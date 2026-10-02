@@ -11,6 +11,19 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+### Added
+
+- A flow can be the content of a tab: `RootSection(id, title, icon:, flow: Checkout()) { order in … }`.
+  Finishing or cancelling a flow at the root of a tab, a detail column or the whole root starts it
+  over in a fresh run (with fresh `.flow` dependencies); `onFinish` gets the result.
+
+### Fixed
+
+- A running flow at the root of a tab is restored with its progress.
+- A flow as a split view's default detail no longer counts as a customized detail.
+- The placeholder for an unregistered screen names the module to add: a `FlowModule` for a flow's
+  steps, a `RouteModule` for a route.
+
 ## [4.0.0] - 2026-10-02
 
 ### Added

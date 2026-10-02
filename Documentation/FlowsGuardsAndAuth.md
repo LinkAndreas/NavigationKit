@@ -63,6 +63,22 @@ Without a style, the flow's own `presentation` trait decides; `nil` pushes it on
 
 Finishing or cancelling unwinds **exactly** the flow's screens, wherever it started — a pushed flow pops them, a presented flow dismisses its modal. Backing out past the first step, or swiping its modal away, abandons it. A screen pushed or presented *from* a step (a help page, a picker sheet) belongs to the flow too: when the flow ends, it goes with it.
 
+### A flow as a tab
+
+A section can host a flow: its steps are the tab's screens, and finishing or cancelling starts it over in a fresh run — with fresh `.flow` dependencies — ready for the next time:
+
+```swift
+NavigationRoot {
+    RootSection(AppTab.order, "Order", icon: "cart", flow: Checkout()) { order in
+        receipts.add(order)                         // called when the flow finishes
+    }
+    RootSection(AppTab.history, "History", icon: "clock") { HistoryRoute.list }
+}
+.routes(CheckoutScreens(), HistoryModule())
+```
+
+The same works without a result handler wherever a root route goes — `RootSection(…) { Checkout() }`, a split view's `detail:`, or `NavigationRoot(Checkout())` — and a running tab flow is restored with its progress.
+
 ### Composing flows
 
 A step runs another flow and continues with its result:
