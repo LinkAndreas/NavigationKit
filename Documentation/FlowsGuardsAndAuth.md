@@ -44,6 +44,21 @@ struct CheckoutScreens: TypedRouteModule {
 - `cancelFlow()` unwinds the same screens, and the caller sees the flow as abandoned (`nil`).
 - Backing out past the first step, or swiping its modal away, also abandons it.
 
+### State and dependencies for one run
+
+A step can remember a value for the flow run it belongs to. Every step of the run gets the same value, and it's released when the run ends — the next run starts fresh:
+
+```swift
+case let .projectUpload(requirement):
+    let draft = nav.remember(for: .flow) { ProofDraft() }
+    ProjectUploadScreen(onNext: {
+        draft.proof.hasDocument = true
+        nav.push(.repositoryLink)
+    })
+```
+
+A nested flow has its own `.flow`; reach the enclosing one with `.flow(HackathonRegistration.self)`. See [Routes & Modules](RoutesAndModules.md#dependencies-and-their-lifetime) for all lifetimes.
+
 ### Composing flows
 
 Run another flow as one step, and continue with its result:

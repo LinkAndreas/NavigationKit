@@ -36,7 +36,7 @@ struct ScreenView: View {
     @Environment(\.routeRegistry) private var registry
 
     var body: some View {
-        let navigator = ScopedNavigator(stack: stack)
+        let navigator = ScopedNavigator(stack: stack, entryID: entry.id)
         RouteRegistry.resolve(entry.route, navigator: navigator, registry: registry)
             .environment(\.navigator, navigator)
             .environment(\.screenContext, ScreenContext(stack: stack, entryID: entry.id, isRoot: entry.id == stack.rootEntry.id))

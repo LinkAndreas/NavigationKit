@@ -1,10 +1,13 @@
 import NavigationKit
 import SwiftUI
 
-/// The proof flow's screens. Its steps continue with `push` and end with `finishFlow(returning:)`;
+/// The proof flow's screens. Steps continue with `push` and end with `finishFlow(returning:)`;
 /// they never know which flow started them or what comes after.
 struct ProofModule: TypedRouteModule {
     func body(for route: ProofRoute, nav: RouteNavigator<ProofRoute>) -> some View {
+        // One draft per run of the flow, shared by its steps and released when the run ends.
+        let draft = nav.remember(for: .flow) { ProofDraft() }
+
         switch route {
         case .verificationSelection:
             VerificationSelectionScreen(
@@ -15,10 +18,11 @@ struct ProofModule: TypedRouteModule {
             ProjectUploadScreen(
                 flow: requirement,
                 onNextTapped: {
+                    draft.proof.hasDocument = true
                     if requirement == .both {
                         nav.push(.repositoryLinkEntry(.both))
                     } else {
-                        nav.finishFlow(returning: Proof(hasDocument: true))
+                        nav.finishFlow(returning: draft.proof)
                     }
                 }
             )
@@ -26,9 +30,15 @@ struct ProofModule: TypedRouteModule {
             RepositoryLinkEntryScreen(
                 flow: requirement,
                 onNextTapped: {
-                    nav.finishFlow(returning: Proof(hasDocument: requirement == .both, hasRepositoryLink: true))
+                    draft.proof.hasRepositoryLink = true
+                    nav.finishFlow(returning: draft.proof)
                 }
             )
         }
     }
+}
+
+/// What the proof flow has collected so far.
+final class ProofDraft {
+    var proof = Proof()
 }
