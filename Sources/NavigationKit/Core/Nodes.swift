@@ -51,11 +51,28 @@ final class Signal {
 
 typealias GuardHandler = @MainActor () async -> Bool
 
+/// Values kept by `Navigator.remember(for:_:)` for one lifetime, one per type. Released with
+/// whatever owns it: a screen's entry, a flow run, or the store.
+@MainActor
+final class Memory {
+    private var values: [ObjectIdentifier: Any] = [:]
+
+    func value<Value>(_ make: () -> Value) -> Value {
+        let key = ObjectIdentifier(Value.self)
+        if let value = values[key] as? Value { return value }
+        let value = make()
+        values[key] = value
+        return value
+    }
+}
+
 /// A pushed flow waiting for `finishFlow`.
 @MainActor
 final class FlowMarker {
     let startIndex: Int
     let route: AnyRoute
+    /// What the flow's screens remember for `.flow`; released with the marker.
+    let memory = Memory()
     private var continuation: CheckedContinuation<(any Sendable)?, Never>?
 
     init(startIndex: Int, route: AnyRoute, continuation: CheckedContinuation<(any Sendable)?, Never>) {
@@ -106,6 +123,8 @@ final class StackNode: Identifiable {
     @ObservationIgnored weak var presentingModal: ModalNode?
     @ObservationIgnored var guards: [Entry.ID: GuardHandler] = [:]
     @ObservationIgnored var flows: [FlowMarker] = []
+    /// What each screen remembers for `.screen`, released when the screen leaves the stack.
+    @ObservationIgnored var memories: [Entry.ID: Memory] = [:]
     @ObservationIgnored var lastPush: (route: AnyRoute, at: Date)?
 
     init(root: AnyRoute, store: NavigationStore?) {
@@ -137,7 +156,10 @@ final class StackNode: Identifiable {
             flow.finish(nil)
         }
         flows.removeAll { $0.startIndex >= newPath.count }
-        removed.forEach { guards[$0.id] = nil }
+        removed.forEach {
+            guards[$0.id] = nil
+            memories[$0.id] = nil
+        }
 
         path = newPath
 
@@ -154,6 +176,7 @@ final class StackNode: Identifiable {
     func reset(root: AnyRoute? = nil) {
         if let root, root != rootEntry.route {
             guards[rootEntry.id] = nil
+            memories[rootEntry.id] = nil
             rootEntry = Entry(route: root)
         }
         setPath([], emit: false)
@@ -167,6 +190,12 @@ final class StackNode: Identifiable {
     }
 
     var hasActiveGuard: Bool { !guardHandlers().isEmpty }
+
+    /// The position of `entryID`: -1 for the root, its path index otherwise, `nil` if it's gone.
+    func index(of entryID: Entry.ID) -> Int? {
+        if entryID == rootEntry.id { return -1 }
+        return path.firstIndex { $0.id == entryID }
+    }
 }
 
 /// A modal presentation: its style, the stack inside it, and whoever awaits its result.
@@ -176,17 +205,22 @@ final class ModalNode: Identifiable {
     let style: PresentationStyle
     let stack: StackNode
     let isFlow: Bool
+    /// The route the flow was started with (a `Flow` value or its first route), when `isFlow`.
+    let flowRoute: AnyRoute?
+    /// What the flow's screens remember for `.flow`, when `isFlow`; released with the modal.
+    @ObservationIgnored let memory = Memory()
 
     @ObservationIgnored weak var presenter: StackNode?
     @ObservationIgnored private var continuation: CheckedContinuation<(any Sendable)?, Never>?
     let appeared = Signal()
     let disappeared = Signal()
 
-    init(style: PresentationStyle, stack: StackNode, presenter: StackNode, isFlow: Bool) {
+    init(style: PresentationStyle, stack: StackNode, presenter: StackNode, isFlow: Bool, flowRoute: AnyRoute? = nil) {
         self.style = style
         self.stack = stack
         self.presenter = presenter
         self.isFlow = isFlow
+        self.flowRoute = isFlow ? flowRoute : nil
         stack.presentingModal = self
     }
 

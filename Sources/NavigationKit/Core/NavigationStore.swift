@@ -41,6 +41,8 @@ public final class NavigationStore {
     /// (restoration or a deep link at launch) makes UIKit defer the sheet and log a warning.
     @ObservationIgnored let sceneIsActive = Signal()
     @ObservationIgnored private var eventContinuations: [UUID: AsyncStream<NavigationEvent>.Continuation] = [:]
+    /// What screens remember for `.window`.
+    @ObservationIgnored private let windowMemory = Memory()
 
     static let singleSectionID = AnySectionID("NavigationKit.main")
 
@@ -368,7 +370,7 @@ extension NavigationStore {
             return present(route, style: .sheet, from: presenter, isFlow: isFlow)
         }
         let stack = StackNode(root: route, store: self)
-        let modal = ModalNode(style: style, stack: stack, presenter: presenter, isFlow: isFlow)
+        let modal = ModalNode(style: style, stack: stack, presenter: presenter, isFlow: isFlow, flowRoute: route)
         presenter.modal = modal
         emit(.presented(route, style))
         return modal
@@ -498,6 +500,45 @@ extension NavigationStore {
         return false
     }
 
+    // MARK: Remember
+
+    /// The value `entryID` on `stack` remembers for `lifetime`. A screen that already left its
+    /// stack (e.g. re-rendering while it animates out) gets a fresh, unkept value.
+    func remember<Value>(_ lifetime: Lifetime, entry entryID: Entry.ID, on stack: StackNode, make: () -> Value) -> Value {
+        if case .window = lifetime.kind { return windowMemory.value(make) }
+        guard let index = stack.index(of: entryID) else { return make() }
+        if case let .flow(routeKey) = lifetime.kind,
+           let memory = flowMemory(matching: routeKey, from: stack, at: index) {
+            return memory.value(make)
+        }
+        // `.screen`, and `.flow` outside a flow.
+        let memory = stack.memories[entryID] ?? Memory()
+        stack.memories[entryID] = memory
+        return memory.value(make)
+    }
+
+    /// The memory of the innermost flow run containing the screen at `index` on `stack` —
+    /// pushed or presented, looking through the screens that presented each modal.
+    private func flowMemory(matching routeKey: String?, from stack: StackNode, at index: Int) -> Memory? {
+        func matches(_ route: AnyRoute?) -> Bool {
+            guard let routeKey else { return true }
+            return route.map { type(of: $0.base).routeKey == routeKey } ?? false
+        }
+        var stack = stack
+        var index = index
+        while true {
+            let pushed = stack.flows
+                .filter { $0.startIndex <= index && matches($0.route) }
+                .max { $0.startIndex < $1.startIndex }
+            if let pushed { return pushed.memory }
+            guard let modal = stack.presentingModal else { return nil }
+            if modal.isFlow, matches(modal.flowRoute) { return modal.memory }
+            guard let presenter = modal.presenter else { return nil }
+            stack = presenter
+            index = presenter.path.count - 1
+        }
+    }
+
     // MARK: Auth
 
     private func needsAuthentication(for route: AnyRoute) -> Bool {
@@ -535,9 +576,16 @@ extension NavigationStore {
 @MainActor
 final class ScopedNavigator: Navigator {
     weak var stack: StackNode?
+    let entryID: Entry.ID
 
-    init(stack: StackNode) {
+    init(stack: StackNode, entryID: Entry.ID) {
         self.stack = stack
+        self.entryID = entryID
+    }
+
+    func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
+        guard let stack, let store = stack.store else { return make() }
+        return store.remember(lifetime, entry: entryID, on: stack, make: make)
     }
 
     @discardableResult
@@ -564,6 +612,13 @@ final class ActiveNavigator: Navigator {
 
     init(store: NavigationStore) {
         self.store = store
+    }
+
+    /// Remembers on behalf of the screen the user is looking at.
+    func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
+        guard let store else { return make() }
+        let stack = store.activeStack
+        return store.remember(lifetime, entry: stack.entries[stack.entries.count - 1].id, on: stack, make: make)
     }
 
     @discardableResult

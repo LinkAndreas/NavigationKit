@@ -56,6 +56,7 @@ let registration = await nav.flow(HackathonRegistration())   // a reusable flow,
 - **Screens don't know their layout.** A navigator is scoped to the screen that receives it; actions travel up the tree to whichever container can handle them. The same feature works in a tab, a sidebar, a sheet or a window.
 - **One verb per intent.** `present(route, as: .sheet(detents: [.medium]))` instead of a modifier per presentation type. Routes can declare traits (`presentation`, `requiresAuth`, `hidesTabBar`), so most call sites are just `nav.open(route)`.
 - **Results come back to the caller, not through state.** `nav.present(.picker, returning: Color.self) { color in … }`, `nav.confirm("Delete?") { … }` — or `await` them.
+- **Dependencies live exactly as long as they're needed.** `nav.remember(for: .flow) { CheckoutSession() }` creates a dependency on first use and releases it when the flow ends — no app-level containers.
 - **Flows are reusable building blocks.** A feature team publishes a `Flow` — a typed entry point with a result — and others start it, or run it as one step of their own flow, without knowing its screens.
 - **Layout-independent paths.** Deep links, `navigate(_:)`, restoration and test assertions all use the same `[Step]` language — no branching on tabs vs. split.
 - **No SwiftUI in your models.** The `NavigationKitInterface` target has routes, the `Navigator` protocol, steps and dialogs; view models and route-contract packages depend on it alone.
@@ -252,6 +253,24 @@ For several route types in one module, conform to `RouteModule` and call `regist
 
 Deep inside a view tree, `@Environment(\.navigator) var nav` gives the screen's navigator.
 
+### Dependencies and their lifetime
+
+```swift
+func body(for route: CheckoutRoute, nav: RouteNavigator<CheckoutRoute>) -> some View {
+    let api     = nav.remember(for: .window) { CheckoutAPI() }               // the whole window
+    let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }   // one checkout run
+    switch route {
+    case .review: ReviewScreen(session: session, onNext: { nav.push(.payment) })
+    // …
+    }
+}
+```
+
+Created the first time it's asked for, the same value on every later ask, released when the
+lifetime ends: `.screen` (popped or dismissed), `.flow` (finished, cancelled or backed out of),
+`.flow(Checkout.self)` (that enclosing flow), `.window` (the `NavigationRoot`). Values are told
+apart by type. Screens keep plain initializers.
+
 ### Navigating
 
 ```swift
@@ -354,6 +373,7 @@ model.didSelect("s1", nav: nav)
 #expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
 nav.answerDialogs(with: "Delete")           // or nav.dialogResponse = { … }
 nav.results[AnyRoute(PaymentRoute.add)] = card
+nav.end(.flow)                              // release what was remembered for the flow
 
 // Every route has a screen (catches a module missing from .routes(…)).
 #expect(RouteRegistry(appModules).missingViews(for: [ScheduleRoute.self, SpeakersRoute.self]).isEmpty)

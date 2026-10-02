@@ -11,6 +11,16 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+### Added
+
+- `Navigator.remember(for:_:)`: keeps a value for a lifetime — `.screen`, `.flow`,
+  `.flow(SomeFlow.self)` or `.window`. It's created the first time it's asked for, every later call
+  returns the same value, and it's released when the lifetime ends (the screen leaves its stack, the
+  flow run finishes, is cancelled or backed out of, or the `NavigationRoot` goes away). Features can
+  scope their dependencies to exactly where they're used, and pass them to screens by initializer.
+- `RecordingNavigator` remembers too, and `end(_:)` releases a lifetime in tests.
+- The ShowCase app's proof flow collects its result in a draft remembered for the flow.
+
 ## [3.0.0] - 2026-10-02
 
 ### Added

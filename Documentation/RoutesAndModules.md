@@ -53,6 +53,45 @@ public struct MyConfModule: RouteModule {
 
 A route without a registered screen shows a visible "unregistered route" placeholder. Registering a type again replaces its screens, so the app can override a feature's screen by listing its own module last.
 
+## Dependencies and their lifetime
+
+Screens get their dependencies through plain initializers, from the module. The module decides how long each one lives with `remember(for:)`:
+
+```swift
+public struct CheckoutModule: TypedRouteModule {
+    public init() {}
+
+    public func body(for route: CheckoutRoute, nav: RouteNavigator<CheckoutRoute>) -> some View {
+        let api     = nav.remember(for: .window) { CheckoutAPI() }
+        let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }
+
+        switch route {
+        case .review:  ReviewScreen(session: session, onNext: { nav.push(.payment) })
+        case .payment: PaymentScreen(session: session, onPaid: { nav.finishFlow(returning: $0) })
+        }
+    }
+}
+```
+
+The rules:
+
+1. A value is created the first time it's asked for — never up front.
+2. Within one lifetime, every ask for the same type returns the same value.
+3. When the lifetime ends, the value is released; the next run starts fresh.
+
+| Lifetime | Created | Released |
+|---|---|---|
+| `.screen` | when this screen first asks | when the screen leaves its stack |
+| `.flow` | when the first screen of a flow run asks | when the run finishes, is cancelled or backed out of |
+| `.flow(Checkout.self)` | like `.flow`, for that enclosing flow — also from inside a nested one | when that flow's run ends |
+| `.window` | when the first screen asks | when the `NavigationRoot` goes away (normally one per window) |
+
+Outside a flow, `.flow` means the screen. Values are told apart by type: to keep two values of the same type, wrap them in distinct types.
+
+Rewiring is one word: `.screen`, `.flow` or `.window`. For a dependency that only part of a flow needs, make that part its own `Flow` — `.flow` inside it then means just that part.
+
+The feature owns all of this; the app only lists `CheckoutModule()`. Calling `remember` in `body` is safe: `body` runs on every render, and every call after the first returns the same value.
+
 ### Checking that every route has a screen
 
 The compiler can't see across modules whether every route you navigate to has a screen, so make it a test. `missingViews(for:)` lists the route types without a registered screen (a `Flow` counts as covered — list its step type):

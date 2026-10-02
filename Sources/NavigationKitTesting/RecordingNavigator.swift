@@ -12,6 +12,14 @@ import Foundation
 ///
 /// Script async answers with ``results`` (for `present(_:returning:)` and `flow`) and
 /// ``dialogResponse`` (for `confirm`, `retry`, `dialog`).
+///
+/// `remember(for:_:)` keeps values per lifetime until you ``end(_:)`` it:
+///
+/// ```swift
+/// let first = nav.remember(for: .flow) { CheckoutSession() }
+/// nav.end(.flow)
+/// #expect(nav.remember(for: .flow) { CheckoutSession() } !== first)
+/// ```
 @MainActor
 public final class RecordingNavigator: Navigator {
     public private(set) var actions: [NavigationAction] = []
@@ -25,6 +33,9 @@ public final class RecordingNavigator: Navigator {
 
     /// Whether actions count as handled. Defaults to always.
     public var handles: @MainActor (NavigationAction) -> Bool = { _ in true }
+
+    /// Values kept by `remember(for:_:)`, per lifetime and type.
+    private var remembered: [Lifetime: [ObjectIdentifier: Any]] = [:]
 
     public init() {}
 
@@ -41,6 +52,21 @@ public final class RecordingNavigator: Navigator {
     public func reset() {
         actions = []
         dialogs = []
+        remembered = [:]
+    }
+
+    /// Ends `lifetime`, as if its screen were popped or its flow had finished: everything
+    /// remembered for it is released, and the next `remember(for:_:)` creates a new value.
+    public func end(_ lifetime: Lifetime) {
+        remembered[lifetime] = nil
+    }
+
+    public func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
+        let key = ObjectIdentifier(Value.self)
+        if let value = remembered[lifetime]?[key] as? Value { return value }
+        let value = make()
+        remembered[lifetime, default: [:]][key] = value
+        return value
     }
 
     @discardableResult
