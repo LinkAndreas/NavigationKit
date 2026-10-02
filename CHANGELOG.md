@@ -11,6 +11,12 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+### Added
+
+- `Remember`: the view form of `remember(for:)`. `Remember(for: .flow) { CheckoutSession() } content:
+  { session in … }` keeps the value for the lifetime and passes it to its content; wrappers nest, so
+  the composition is visible where screens are wired.
+
 ## [3.1.1] - 2026-10-02
 
 ### Fixed

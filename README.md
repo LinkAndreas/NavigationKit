@@ -271,6 +271,17 @@ lifetime ends: `.screen` (popped or dismissed), `.flow` (finished, cancelled or 
 `.flow(Checkout.self)` (that enclosing flow), `.window` (the `NavigationRoot`). Values are told
 apart by type. Screens keep plain initializers.
 
+The same as a view, where wrappers nest to show the composition:
+
+```swift
+case .review:
+    Remember(for: .window) { CheckoutAPI() } content: { api in
+        Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
+            ReviewScreen(session: session, onNext: { nav.push(.payment) })
+        }
+    }
+```
+
 ### Navigating
 
 ```swift

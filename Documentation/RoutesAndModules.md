@@ -90,6 +90,21 @@ Outside a flow, `.flow` means the screen. Values are told apart by type: to keep
 
 A screen that leaves its stack keeps its values while it animates out; they're released once, when its view is gone.
 
+### As a view: `Remember`
+
+`Remember` does the same in view form. Nesting wrappers makes the composition visible where screens are wired, and screens still get plain values:
+
+```swift
+case .review:
+    Remember(for: .window) { CheckoutAPI() } content: { api in
+        Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
+            ReviewScreen(session: session, onNext: { nav.push(.payment) })
+        }
+    }
+```
+
+It uses the navigator of the screen it's in, so it keeps values inside screens NavigationKit shows. In a bare preview, `make` runs on every render.
+
 Rewiring is one word: `.screen`, `.flow` or `.window`. For a dependency that only part of a flow needs, make that part its own `Flow` — `.flow` inside it then means just that part.
 
 The feature owns all of this; the app only lists `CheckoutModule()`. Calling `remember` in `body` is safe: `body` runs on every render, and every call after the first returns the same value.
