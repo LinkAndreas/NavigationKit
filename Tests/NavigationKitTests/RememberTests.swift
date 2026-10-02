@@ -1,3 +1,4 @@
+import SwiftUI
 import Testing
 import NavigationKitTesting
 @testable import NavigationKit
@@ -164,5 +165,43 @@ struct RememberTests {
 
         nav.end(.flow)
         #expect(nav.remember(for: .flow) { Session() } !== first)
+    }
+}
+
+@MainActor
+struct RememberViewTests {
+    @Test func passesTheSameValueToItsContentOnEveryRender() {
+        let nav = RecordingNavigator()
+        var created = 0
+        var received: [ObjectIdentifier] = []
+        let view = Remember(for: .flow) { created += 1; return Session() } content: { session in
+            let _ = received.append(ObjectIdentifier(session))
+            Color.clear.frame(width: 1, height: 1)
+        }
+        .environment(\.navigator, nav)
+
+        _ = ImageRenderer(content: view).cgImage
+        _ = ImageRenderer(content: view).cgImage
+
+        #expect(created == 1)
+        #expect(received.count == 2)
+        #expect(Set(received).count == 1)
+    }
+
+    @Test func nestedWrappersComposeTheirValues() {
+        let nav = RecordingNavigator()
+        var sessionsMadeWith: [ObjectIdentifier] = []
+        let view = Remember(for: .window) { Cache() } content: { cache in
+            Remember(for: .flow) { () -> Session in
+                sessionsMadeWith.append(ObjectIdentifier(cache))
+                return Session()
+            } content: { _ in Color.clear.frame(width: 1, height: 1) }
+        }
+        .environment(\.navigator, nav)
+
+        _ = ImageRenderer(content: view).cgImage
+
+        let cache: Cache = nav.remember(for: .window) { Cache() }
+        #expect(sessionsMadeWith == [ObjectIdentifier(cache)])
     }
 }
