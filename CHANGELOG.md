@@ -11,6 +11,8 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-02
+
 ### Added
 
 - Flows own their steps. A `Flow` declares its input (its properties), `Step` (a nested enum, not a
@@ -403,7 +405,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...v3.1.0
