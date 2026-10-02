@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Discover links to Schedule and Account without importing them: the app injects the
 /// destination routes when it lists this module.
-public struct DiscoverModule<Schedule: Route, Account: Route>: RouteModule {
+public struct DiscoverModule<Schedule: Route, Account: Route>: NavigationModule {
     private let scheduleRoute: Schedule
     private let accountRoute: Account
 
@@ -14,14 +14,14 @@ public struct DiscoverModule<Schedule: Route, Account: Route>: RouteModule {
 
     @MainActor
     public func register(in registry: RouteRegistry) {
-        registry.register { [scheduleRoute, accountRoute] (route: DiscoverRoute, nav) in
+        registry.register { [scheduleRoute, accountRoute] (route: DiscoverRoute, navigator) in
             switch route {
             case .discover:
                 DiscoverScreen(
-                    openEventDetails: { nav.push(.eventDetails) },
-                    openKeynoteDetails: { nav.push(.keynoteDetails(id: $0)) },
-                    openSchedule: { nav.push(scheduleRoute) },
-                    openAccount: { nav.present(accountRoute) }
+                    openEventDetails: { navigator.push(.eventDetails) },
+                    openKeynoteDetails: { navigator.push(.keynoteDetails(id: $0)) },
+                    openSchedule: { navigator.push(scheduleRoute) },
+                    openAccount: { navigator.present(accountRoute) }
                 )
             case .eventDetails:
                 EventDetailsScreen()

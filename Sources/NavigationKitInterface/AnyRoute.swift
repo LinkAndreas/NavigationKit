@@ -25,7 +25,10 @@ public struct AnyRoute: Hashable, Sendable, Codable, CustomStringConvertible {
         hasher.combine(AnyHashable(base))
     }
 
-    public var description: String { "\(type(of: base)).\(base)" }
+    public var description: String {
+        if base is any AnyFlowStepRoute { return "\(base)" }        // "Checkout.payment(…)"
+        return "\(type(of: base)).\(base)"
+    }
 
     // MARK: Codable
 
@@ -43,7 +46,7 @@ public struct AnyRoute: Hashable, Sendable, Codable, CustomStringConvertible {
         guard let decode = RouteTypes.decoder(for: key) else {
             throw DecodingError.dataCorruptedError(
                 forKey: .type, in: container,
-                debugDescription: "Unknown route type '\(key)'. Register it via RouteTypes.register(_:) or a RouteModule."
+                debugDescription: "Unknown route type '\(key)'. Register it via RouteTypes.register(_:) or a NavigationModule."
             )
         }
         self = try decode(try container.superDecoder(forKey: .value))
@@ -54,7 +57,7 @@ public struct AnyRoute: Hashable, Sendable, Codable, CustomStringConvertible {
 ///
 /// Every route type is registered automatically the first time it is wrapped in an
 /// ``AnyRoute`` — i.e. whenever it is pushed, presented or declared as a section root.
-/// Register types explicitly (or list them in `RouteModule`) when state may be restored
+/// Register types explicitly (or list them in `NavigationModule`) when state may be restored
 /// before a type has been used in the current process.
 public enum RouteTypes {
     private static let lock = NSLock()

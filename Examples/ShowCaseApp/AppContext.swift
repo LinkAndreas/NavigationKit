@@ -10,7 +10,7 @@ import SwiftUI
 /// Every feature contributes its screens as a module. Modules that need app-provided
 /// dependencies or cross-feature destinations receive them here.
 @MainActor
-let appModules: [any RouteModule] = [
+let appModules: [any NavigationModule] = [
     AccountModule(),
     MyConfModule(),
     SpeakersModule(),

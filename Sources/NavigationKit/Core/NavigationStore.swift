@@ -43,6 +43,8 @@ public final class NavigationStore {
     @ObservationIgnored private var eventContinuations: [UUID: AsyncStream<NavigationEvent>.Continuation] = [:]
     /// What screens remember for `.window`.
     @ObservationIgnored private let windowMemory = Memory()
+    /// What each flow run's screens remember for `.flow`, by run.
+    @ObservationIgnored private var flowMemories: [UUID: Memory] = [:]
 
     static let singleSectionID = AnySectionID("NavigationKit.main")
 
@@ -151,7 +153,7 @@ public final class NavigationStore {
                 }
             case let .present(route, style):
                 if isAttached { await sceneIsActive.wait() }
-                guard let modal = present(route, style: style, from: cursor, isFlow: false) else { continue }
+                guard let modal = present(route, style: style, from: cursor) else { continue }
                 if isAttached { await modal.appeared.wait() }
                 cursor = modal.stack
             }
@@ -226,11 +228,12 @@ public final class NavigationStore {
 // MARK: - Handling actions
 
 extension NavigationStore {
+    /// Handles `action` for the screen `entry` on `origin` (its top screen when `nil`).
     @discardableResult
-    func handle(_ action: NavigationAction, from origin: StackNode) -> Bool {
+    func handle(_ action: NavigationAction, from origin: StackNode, entry: Entry.ID? = nil) -> Bool {
         if let route = action.targetRoute, needsAuthentication(for: route) {
             authenticate(route: route, from: origin) { [weak self] in
-                _ = self?.handle(action, from: origin)
+                _ = self?.handle(action, from: origin, entry: entry)
             }
             return true
         }
@@ -241,7 +244,7 @@ extension NavigationStore {
             handled = push(route, on: origin)
         case let .open(route):
             if let style = route.presentation {
-                handled = present(route, style: style, from: origin, isFlow: false) != nil
+                handled = present(route, style: style, from: origin) != nil
             } else {
                 handled = push(route, on: origin)
             }
@@ -258,7 +261,7 @@ extension NavigationStore {
                 handled = false
             }
         case let .present(route, style):
-            handled = present(route, style: style ?? route.presentation ?? .sheet, from: origin, isFlow: false) != nil
+            handled = present(route, style: style ?? route.presentation ?? .sheet, from: origin) != nil
         case let .show(route):
             handled = show(route, from: origin)
         case let .select(id):
@@ -269,7 +272,7 @@ extension NavigationStore {
             Task { _ = await self.result(of: action, from: origin) }
             handled = true
         case let .finishFlow(result):
-            handled = finishFlow(from: origin, result: result)
+            handled = finishFlow(from: origin, entry: entry ?? origin.entries[origin.entries.count - 1].id, result: result)
         case let .navigate(steps):
             Task { await self.navigate(steps) }
             handled = true
@@ -287,15 +290,21 @@ extension NavigationStore {
         }
         switch action {
         case let .present(route, style):
-            return await presentForResult(route, style: style ?? route.presentation ?? .sheet, from: origin, isFlow: false)
+            return await presentForResult(route, style: style ?? route.presentation ?? .sheet, from: origin)
         case let .flow(route, style):
+            guard let flow = route.base as? any Flow else {
+                emit(.unhandled(action))
+                return nil
+            }
+            let run = UUID()
+            let firstStep = flow.firstStepRoute(run: run)
             if let style = style ?? route.presentation {
-                return await presentForResult(route, style: style, from: origin, isFlow: true)
+                return await presentForResult(firstStep, style: style, from: origin, flowRun: run)
             }
             return await withCheckedContinuation { continuation in
-                let marker = FlowMarker(startIndex: origin.path.count, route: route, continuation: continuation)
+                let marker = FlowMarker(startIndex: origin.path.count, route: route, run: run, continuation: continuation)
                 origin.flows.append(marker)
-                origin.append(route)
+                origin.append(firstStep)
                 emit(.pushed(route))
             }
         default:
@@ -359,7 +368,7 @@ extension NavigationStore {
     // MARK: Modals
 
     @discardableResult
-    func present(_ route: AnyRoute, style: PresentationStyle, from origin: StackNode, isFlow: Bool) -> ModalNode? {
+    func present(_ route: AnyRoute, style: PresentationStyle, from origin: StackNode, flowRun: UUID? = nil) -> ModalNode? {
         let presenter = origin.topmost
         if style.kind == .window {
             if supportsMultipleWindows, let openWindow {
@@ -367,18 +376,18 @@ extension NavigationStore {
                 emit(.presented(route, style))
                 return nil
             }
-            return present(route, style: .sheet, from: presenter, isFlow: isFlow)
+            return present(route, style: .sheet, from: presenter, flowRun: flowRun)
         }
         let stack = StackNode(root: route, store: self)
-        let modal = ModalNode(style: style, stack: stack, presenter: presenter, isFlow: isFlow, flowRoute: route)
+        let modal = ModalNode(style: style, stack: stack, presenter: presenter, flowRun: flowRun)
         presenter.modal = modal
         emit(.presented(route, style))
         return modal
     }
 
-    private func presentForResult(_ route: AnyRoute, style: PresentationStyle, from origin: StackNode, isFlow: Bool) async -> (any Sendable)? {
+    private func presentForResult(_ route: AnyRoute, style: PresentationStyle, from origin: StackNode, flowRun: UUID? = nil) async -> (any Sendable)? {
         await withCheckedContinuation { continuation in
-            if let modal = present(route, style: style, from: origin, isFlow: isFlow) {
+            if let modal = present(route, style: style, from: origin, flowRun: flowRun) {
                 modal.awaitResult(continuation)
             } else {
                 continuation.resume(returning: nil)
@@ -405,6 +414,7 @@ extension NavigationStore {
         teardown(modal.stack)
         modal.finish(result)
         presenter.modal = nil
+        releaseEndedFlowRuns()
         if !isAttached || !modal.appeared.isSet { modal.disappeared.set() }
         emit(.dismissed(modal.stack.rootEntry.route))
     }
@@ -479,25 +489,69 @@ extension NavigationStore {
 
     // MARK: Flows
 
-    private func finishFlow(from origin: StackNode, result: (any Sendable)?) -> Bool {
-        var stack: StackNode? = origin
-        while let current = stack {
-            if let marker = current.flows.last(where: { $0.startIndex < current.path.count }) {
-                if let modal = current.modal { closeModal(modal, result: nil) }
-                current.flows.removeAll { $0 === marker }
-                marker.finish(result)
-                current.setPath(Array(current.path.prefix(marker.startIndex)))
-                emit(.flowFinished(marker.route))
-                return true
-            }
-            if let modal = current.presentingModal, modal.isFlow {
-                emit(.flowFinished(modal.stack.rootEntry.route))
-                closeModal(modal, result: result)
-                return true
-            }
-            stack = current.presentingModal?.presenter
+    /// Ends the flow run that the screen `entryID` on `origin` belongs to — a step of it, or a
+    /// screen pushed or presented from one. Unwinds exactly the run's screens and hands `result`
+    /// to whoever started it. Works for restored and deep-linked runs too (nobody awaits those).
+    private func finishFlow(from origin: StackNode, entry entryID: Entry.ID, result: (any Sendable)?) -> Bool {
+        guard let (stack, step) = flowStep(containing: entryID, on: origin, matching: nil) else { return false }
+        let run = step.run
+        if let modal = stack.modal { closeModal(modal, result: nil) }
+
+        if let marker = stack.flows.first(where: { $0.run == run }) {
+            stack.flows.removeAll { $0 === marker }
+            marker.finish(result)
+            stack.setPath(Array(stack.path.prefix(marker.startIndex)))
+            emit(.flowFinished(marker.route))
+            return true
         }
-        return false
+        guard let first = stack.entries.firstIndex(where: { $0.route.flowStep?.run == run }) else { return false }
+        emit(.flowFinished(step.flowRoute))
+        if first == 0 {
+            // The run starts at the stack's root: it fills a modal.
+            guard let modal = stack.presentingModal else { return false }
+            closeModal(modal, result: modal.flowRun == run ? result : nil)
+        } else {
+            stack.setPath(Array(stack.path.prefix(first - 1)))
+        }
+        return true
+    }
+
+    /// The nearest flow step at or below the screen `entryID` on `origin` — following modals back
+    /// to the screens that presented them — and the stack it's on.
+    private func flowStep(
+        containing entryID: Entry.ID,
+        on origin: StackNode,
+        matching routeKey: String?
+    ) -> (StackNode, any AnyFlowStepRoute)? {
+        guard let start = origin.index(of: entryID) else { return nil }
+        var stack = origin
+        var position = start + 1                         // into `entries`, where the root is 0
+        while true {
+            let entries = stack.entries
+            for index in stride(from: position, through: 0, by: -1) {
+                if let step = entries[index].route.flowStep, routeKey == nil || step.flowRouteKey == routeKey {
+                    return (stack, step)
+                }
+            }
+            guard let presenter = stack.presentingModal?.presenter else { return nil }
+            stack = presenter
+            position = presenter.entries.count - 1
+        }
+    }
+
+    /// Releases what flow runs remembered once none of their screens is left anywhere.
+    func releaseEndedFlowRuns() {
+        guard !flowMemories.isEmpty else { return }
+        var live = Set<UUID>()
+        func collect(_ stack: StackNode) {
+            for entry in stack.entries { if let run = entry.route.flowStep?.run { live.insert(run) } }
+            if let modal = stack.modal { collect(modal.stack) }
+        }
+        for section in sections {
+            collect(section.main)
+            if let detail = section.detail { collect(detail) }
+        }
+        flowMemories = flowMemories.filter { live.contains($0.key) }
     }
 
     // MARK: Remember
@@ -506,37 +560,17 @@ extension NavigationStore {
     /// left its stack.
     func memory(for lifetime: Lifetime, entry entryID: Entry.ID, on stack: StackNode) -> Memory? {
         if case .window = lifetime.kind { return windowMemory }
-        guard let index = stack.index(of: entryID) else { return nil }
+        guard stack.index(of: entryID) != nil else { return nil }
         if case let .flow(routeKey) = lifetime.kind,
-           let memory = flowMemory(matching: routeKey, from: stack, at: index) {
+           let (_, step) = flowStep(containing: entryID, on: stack, matching: routeKey) {
+            let memory = flowMemories[step.run] ?? Memory()
+            flowMemories[step.run] = memory
             return memory
         }
         // `.screen`, and `.flow` outside a flow.
         let memory = stack.memories[entryID] ?? Memory()
         stack.memories[entryID] = memory
         return memory
-    }
-
-    /// The memory of the innermost flow run containing the screen at `index` on `stack` —
-    /// pushed or presented, looking through the screens that presented each modal.
-    private func flowMemory(matching routeKey: String?, from stack: StackNode, at index: Int) -> Memory? {
-        func matches(_ route: AnyRoute?) -> Bool {
-            guard let routeKey else { return true }
-            return route.map { type(of: $0.base).routeKey == routeKey } ?? false
-        }
-        var stack = stack
-        var index = index
-        while true {
-            let pushed = stack.flows
-                .filter { $0.startIndex <= index && matches($0.route) }
-                .max { $0.startIndex < $1.startIndex }
-            if let pushed { return pushed.memory }
-            guard let modal = stack.presentingModal else { return nil }
-            if modal.isFlow, matches(modal.flowRoute) { return modal.memory }
-            guard let presenter = modal.presenter else { return nil }
-            stack = presenter
-            index = presenter.path.count - 1
-        }
     }
 
     // MARK: Auth
@@ -556,7 +590,7 @@ extension NavigationStore {
     /// Presents the login route and waits. The login screen calls `nav.dismiss(returning: true)`.
     private func login(from origin: StackNode) async -> Bool {
         guard let loginRoute else { return false }
-        let result = await presentForResult(loginRoute, style: loginRoute.presentation ?? .sheet, from: origin, isFlow: false)
+        let result = await presentForResult(loginRoute, style: loginRoute.presentation ?? .sheet, from: origin)
         return (result as? Bool) == true && (authCheck?() ?? true)
     }
 
@@ -600,7 +634,7 @@ final class ScopedNavigator: Navigator {
     @discardableResult
     func perform(_ action: NavigationAction) -> Bool {
         guard let stack, let store = stack.store else { return false }
-        return store.handle(action, from: stack)
+        return store.handle(action, from: stack, entry: stack.index(of: entryID) != nil ? entryID : nil)
     }
 
     func result(of action: NavigationAction) async -> (any Sendable)? {

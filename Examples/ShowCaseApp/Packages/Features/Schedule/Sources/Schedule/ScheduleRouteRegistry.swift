@@ -3,18 +3,18 @@ import SwiftUI
 
 /// Schedule screens need a dependency from the app (speaker avatars), which the app passes in
 /// when it lists the module.
-public struct ScheduleModule: TypedRouteModule {
+public struct ScheduleModule: RouteModule {
     private let speakerAvatarProvider: ((String) -> Image?)?
 
     public init(speakerAvatarProvider: ((String) -> Image?)? = nil) {
         self.speakerAvatarProvider = speakerAvatarProvider
     }
 
-    public func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+    public func body(for route: ScheduleRoute, navigator: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
         case .list:
             // `show` fills the detail column on iPad and pushes on iPhone.
-            ScheduleView(onSessionTapped: { nav.show(.session(id: $0)) })
+            ScheduleView(onSessionTapped: { navigator.show(.session(id: $0)) })
         case .placeholder:
             ContentUnavailableView("Select a session", systemImage: "calendar")
         case let .session(id):
@@ -23,17 +23,17 @@ public struct ScheduleModule: TypedRouteModule {
                 speakerAvatarProvider: speakerAvatarProvider,
                 onSpeakerTapped: { speakerId in
                     if let url = URL(string: "navigator://speakers/speaker/\(speakerId)") {
-                        nav.open(url)
+                        navigator.open(url)
                     }
                 },
                 onAddToMyConfTapped: {
                     SessionStore.save(sessionID: id)
-                    nav.dialog(
+                    navigator.dialog(
                         "Added to MyConf",
                         message: "This session has been saved to your personal schedule."
                     ) {
                         Dialog.Action("view_saved_sessions") {
-                            if let url = URL(string: "navigator://myconf/savedSessions") { nav.open(url) }
+                            if let url = URL(string: "navigator://myconf/savedSessions") { navigator.open(url) }
                         }
                         Dialog.Action("OK", role: .cancel)
                     }

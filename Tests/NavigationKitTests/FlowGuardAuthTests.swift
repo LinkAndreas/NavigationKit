@@ -9,11 +9,11 @@ struct FlowTests {
         let nav = store.navigator
         nav.push(HomeRoute.profile(id: "1"))
 
-        async let result = nav.flow(FlowRoute.step1, returning: String.self)
+        async let result = nav.flow(ProofFlow())
         await settle()
-        nav.push(FlowRoute.step2)
-        nav.push(FlowRoute.step3)
-        nav.finishFlow(returning: "done")
+        let flow = flowNavigator(store, ProofFlow.self)
+        flow.next(.link)
+        flowNavigator(store, ProofFlow.self).finish("done")
 
         #expect(await result == "done")
         #expect(store.currentSteps == [.push(HomeRoute.profile(id: "1"))])
@@ -21,18 +21,18 @@ struct FlowTests {
 
     @Test func backingOutOfFlowYieldsNil() async {
         let store = NavigationStore(root: HomeRoute.feed)
-        async let finished = store.navigator.flow(FlowRoute.step1)
+        async let result = store.navigator.flow(ProofFlow())
         await settle()
         store.navigator.pop()
-        #expect(await finished == false)
+        #expect(await result == nil)
     }
 
     @Test func presentedFlowFinishesByDismissing() async {
         let store = NavigationStore(root: HomeRoute.feed)
-        async let result = store.navigator.flow(FlowRoute.step1, as: .sheet, returning: Int.self)
+        async let result = store.navigator.flow(RegistrationFlow())
         await settle()
-        store.navigator.push(FlowRoute.step2)
-        store.navigator.finishFlow(returning: 7)
+        flowNavigator(store, RegistrationFlow.self).next(.summary(proof: "doc"))
+        flowNavigator(store, RegistrationFlow.self).finish(7)
         #expect(await result == 7)
         #expect(store.currentSteps.isEmpty)
     }

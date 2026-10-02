@@ -4,10 +4,10 @@ import Foundation
 /// A ``Navigator`` that records what a screen or view model asked for — no views needed.
 ///
 /// ```swift
-/// let nav = RecordingNavigator()
-/// let model = SpeakerListModel(nav: nav)
+/// let navigator = RecordingNavigator()
+/// let model = SpeakerListModel(navigator: navigator)
 /// model.didSelect(id: "s1")
-/// #expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
+/// #expect(navigator.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
 /// ```
 ///
 /// Script async answers with ``results`` (for `present(_:returning:)` and `flow`) and
@@ -16,9 +16,9 @@ import Foundation
 /// `remember(for:_:)` keeps values per lifetime until you ``end(_:)`` it:
 ///
 /// ```swift
-/// let first = nav.remember(for: .flow) { CheckoutSession() }
-/// nav.end(.flow)
-/// #expect(nav.remember(for: .flow) { CheckoutSession() } !== first)
+/// let first = navigator.remember(for: .flow) { CheckoutSession() }
+/// navigator.end(.flow)
+/// #expect(navigator.remember(for: .flow) { CheckoutSession() } !== first)
 /// ```
 @MainActor
 public final class RecordingNavigator: Navigator {
@@ -42,6 +42,17 @@ public final class RecordingNavigator: Navigator {
     /// Shorthand for the routes pushed so far.
     public var pushedRoutes: [AnyRoute] {
         actions.compactMap { if case let .push(route) = $0 { route } else { nil } }
+    }
+
+    /// The steps of `F` shown with `FlowNavigator.next(_:)` so far.
+    ///
+    /// ```swift
+    /// let navigator = FlowNavigator(RecordingNavigator(), flow: Checkout(cart: .sample))
+    /// CheckoutScreens().body(for: .review, in: navigator.flow, navigator: navigator)   // tap "Next" …
+    /// #expect(recorder.steps(of: Checkout.self) == [.address])
+    /// ```
+    public func steps<F: Flow>(of _: F.Type) -> [F.Step] {
+        pushedRoutes.compactMap { $0.as(FlowStepRoute<F>.self)?.step }
     }
 
     /// Answers every dialog with the action whose title key is `title`.

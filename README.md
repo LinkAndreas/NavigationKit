@@ -28,7 +28,7 @@ NavigationRoot(selection: AppTab.discover) {
 .layout(.adaptive)                       // tabs on iPhone, sidebar + detail on iPad and Mac
 .routes(DiscoverModule(), ScheduleModule())
 .deepLinks(AppLinks.self)
-.restoration(.sceneStorage("nav"))
+.restoration(.sceneStorage("navigator"))
 ```
 
 ```swift
@@ -36,10 +36,10 @@ enum ScheduleRoute: Route {
     case list, placeholder, session(id: String)
 }
 
-struct ScheduleModule: TypedRouteModule {
-    func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+struct ScheduleModule: RouteModule {
+    func body(for route: ScheduleRoute, navigator: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
-        case .list:        SessionList(onSelect: { nav.show(.session(id: $0)) })   // detail column or push
+        case .list:        SessionList(onSelect: { navigator.show(.session(id: $0)) })   // detail column or push
         case .placeholder: ContentUnavailableView("Select a session", systemImage: "calendar")
         case let .session(id): SessionDetail(id: id)
         }
@@ -48,16 +48,16 @@ struct ScheduleModule: TypedRouteModule {
 ```
 
 ```swift
-let registration = await nav.flow(HackathonRegistration())   // a reusable flow, started as one unit
+let registration = await navigator.flow(HackathonRegistration())   // a reusable flow, started as one unit
 ```
 
 ## 💡 What issues does it solve?
 
 - **Screens don't know their layout.** A navigator is scoped to the screen that receives it; actions travel up the tree to whichever container can handle them. The same feature works in a tab, a sidebar, a sheet or a window.
-- **One verb per intent.** `present(route, as: .sheet(detents: [.medium]))` instead of a modifier per presentation type. Routes can declare traits (`presentation`, `requiresAuth`, `hidesTabBar`), so most call sites are just `nav.open(route)`.
-- **Results come back to the caller, not through state.** `nav.present(.picker, returning: Color.self) { color in … }`, `nav.confirm("Delete?") { … }` — or `await` them.
-- **Dependencies live exactly as long as they're needed.** `nav.remember(for: .flow) { CheckoutSession() }` creates a dependency on first use and releases it when the flow ends — no app-level containers.
-- **Flows are reusable building blocks.** A feature team publishes a `Flow` — a typed entry point with a result — and others start it, or run it as one step of their own flow, without knowing its screens.
+- **One verb per intent.** `present(route, as: .sheet(detents: [.medium]))` instead of a modifier per presentation type. Routes can declare traits (`presentation`, `requiresAuth`, `hidesTabBar`), so most call sites are just `navigator.open(route)`.
+- **Results come back to the caller, not through state.** `navigator.present(.picker, returning: Color.self) { color in … }`, `navigator.confirm("Delete?") { … }` — or `await` them.
+- **Dependencies live exactly as long as they're needed.** `navigator.remember(for: .flow) { CheckoutSession() }` creates a dependency on first use and releases it when the flow ends — no app-level containers.
+- **Flows own their steps.** A `Flow` declares its input, steps and result, and one `FlowModule` wires all its screens. Callers start it as a unit, or run it as one step of their own flow, and get a type-checked result; nothing outside the flow can show its steps.
 - **Layout-independent paths.** Deep links, `navigate(_:)`, restoration and test assertions all use the same `[Step]` language — no branching on tabs vs. split.
 - **No SwiftUI in your models.** The `NavigationKitInterface` target has routes, the `Navigator` protocol, steps and dialogs; view models and route-contract packages depend on it alone.
 - **No timing hacks.** Nested presentations are sequenced on real appear/disappear signals.
@@ -132,15 +132,15 @@ A module maps each route to its screen. The `switch` is exhaustive, so a new cas
 won't compile:
 
 ```swift
-struct SpeakersModule: TypedRouteModule {
-    func body(for route: SpeakersRoute, nav: RouteNavigator<SpeakersRoute>) -> some View {
+struct SpeakersModule: RouteModule {
+    func body(for route: SpeakersRoute, navigator: RouteNavigator<SpeakersRoute>) -> some View {
         switch route {
         case .overview:
-            SpeakerList(onSelect: { nav.push(.detail(id: $0)) })
+            SpeakerList(onSelect: { navigator.push(.detail(id: $0)) })
         case let .detail(id):
-            SpeakerDetail(id: id, onContact: { nav.open(.contact(email: $0)) })
+            SpeakerDetail(id: id, onContact: { navigator.open(.contact(email: $0)) })
         case let .contact(email):
-            MailComposer(to: email, onDone: { nav.dismiss() })
+            MailComposer(to: email, onDone: { navigator.dismiss() })
         }
     }
 }
@@ -171,10 +171,10 @@ NavigationRoot(selection: AppTab.speakers) {
 ### 4. Navigate
 
 ```swift
-nav.push(.detail(id: "s1"))
-nav.show(.detail(id: "s1"))                 // split detail column, or push in compact width
-nav.open(.contact(email: "a@b.c"))          // push or present, per the route's trait
-nav.confirm("Discard changes?", confirm: "Discard", destructive: true) { nav.pop() }
+navigator.push(.detail(id: "s1"))
+navigator.show(.detail(id: "s1"))          // split detail column, or push in compact width
+navigator.open(.contact(email: "a@b.c"))   // push or present, per the route's trait
+navigator.confirm("Discard changes?", confirm: "Discard", destructive: true) { navigator.pop() }
 ```
 
 The [cheat sheet](#-cheat-sheet) below lists everything else.
@@ -183,9 +183,9 @@ The [cheat sheet](#-cheat-sheet) below lists everything else.
 
 ```swift
 @Test @MainActor func selectingASpeakerPushesDetail() {
-    let nav = RecordingNavigator()
-    SpeakerListModel(nav: nav).didSelect(id: "s1")
-    #expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
+    let navigator = RecordingNavigator()
+    SpeakerListModel(navigator: navigator).didSelect(id: "s1")
+    #expect(navigator.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
 }
 ```
 
@@ -221,7 +221,7 @@ NavigationRoot(selection: AppTab.home) {
 .layout(.adaptive)            // .stack | .tabs | .split | .adaptive
 .routes(HomeModule(), ScheduleModule())       // every route's screens; chainable
 .deepLinks(AppLinks.self)
-.restoration(.sceneStorage("nav"))
+.restoration(.sceneStorage("navigator"))
 .onNavigationEvent { Analytics.track($0) }
 .navigationDebugger()         // NavigationKitDebug
 ```
@@ -232,35 +232,35 @@ NavigationRoot(selection: AppTab.home) {
 
 ### Screens for routes
 
-**`TypedRouteModule`** — the screens for one route type, with whatever the screens need injected:
+**`RouteModule`** — the screens for one route type, with whatever the screens need injected:
 stores, view models, or other features' routes. The `switch` must be exhaustive, so a new case
 without a screen won't compile:
 
 ```swift
-struct ScheduleModule: TypedRouteModule {
+struct ScheduleModule: RouteModule {
     let store: ScheduleStore
 
-    func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+    func body(for route: ScheduleRoute, navigator: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
-        case .list: ScheduleList(store: store, onSelect: { nav.show(.session(id: $0)) })
-        case let .session(id): SessionView(store: store, onSpeaker: { nav.push(SpeakersRoute.detail(id: $0)) })
+        case .list: ScheduleList(store: store, onSelect: { navigator.show(.session(id: $0)) })
+        case let .session(id): SessionView(store: store, onSpeaker: { navigator.push(SpeakersRoute.detail(id: $0)) })
         }
     }
 }
 ```
 
-For several route types in one module, conform to `RouteModule` and call `registry.register { (route: R, nav) in … }` per type.
+For several route types in one module, conform to `NavigationModule` and call `registry.register { (route: R, navigator) in … }` per type.
 
-Deep inside a view tree, `@Environment(\.navigator) var nav` gives the screen's navigator.
+Deep inside a view tree, `@Environment(\.navigator) var navigator` gives the screen's navigator.
 
 ### Dependencies and their lifetime
 
 ```swift
-func body(for route: CheckoutRoute, nav: RouteNavigator<CheckoutRoute>) -> some View {
-    let api     = nav.remember(for: .window) { CheckoutAPI() }               // the whole window
-    let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }   // one checkout run
+func body(for route: CheckoutRoute, navigator: RouteNavigator<CheckoutRoute>) -> some View {
+    let api     = navigator.remember(for: .window) { CheckoutAPI() }               // the whole window
+    let session = navigator.remember(for: .flow)   { CheckoutSession(api: api) }   // one checkout run
     switch route {
-    case .review: ReviewScreen(session: session, onNext: { nav.push(.payment) })
+    case .review: ReviewScreen(session: session, onNext: { navigator.push(.payment) })
     // …
     }
 }
@@ -275,9 +275,9 @@ The same as a view, where wrappers nest to show the composition:
 
 ```swift
 case .review:
-    Remember(for: .window) { CheckoutAPI() } content: { api in
-        Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
-            ReviewScreen(session: session, onNext: { nav.push(.payment) })
+    WithDependency(for: .window) { CheckoutAPI() } content: { api in
+        WithDependency(for: .flow) { CheckoutSession(api: api) } content: { session in
+            ReviewScreen(session: session, onNext: { navigator.push(.payment) })
         }
     }
 ```
@@ -285,13 +285,13 @@ case .review:
 ### Navigating
 
 ```swift
-nav.push(.detail(id: "1"))
-nav.pop(); nav.popToRoot(); nav.pop(to: .list)            // pop(to:) returns Bool
-nav.open(.filter)                                          // push or present, per the trait
-nav.show(.session(id: "1"))                                // detail column in split; push otherwise
-nav.select(AppTab.schedule)                                // switch tab or sidebar section
-nav.navigate([.select(AppTab.schedule), .show(ScheduleRoute.session(id: "42"))])
-nav.open(URL(string: "myapp://schedule/session/42")!)
+navigator.push(.detail(id: "1"))
+navigator.pop(); navigator.popToRoot(); navigator.pop(to: .list)   // pop(to:) returns Bool
+navigator.open(.filter)                                            // push or present, per the trait
+navigator.show(.session(id: "1"))                                  // detail column in split; push otherwise
+navigator.select(AppTab.schedule)                                  // switch tab or sidebar section
+navigator.navigate([.select(AppTab.schedule), .show(ScheduleRoute.session(id: "42"))])
+navigator.open(URL(string: "myapp://schedule/session/42")!)
 ```
 
 `navigate(_:)` replaces the current location: it asks the guards of everything it would discard,
@@ -301,17 +301,17 @@ inside whatever the previous step opened.
 ### Modals and results
 
 ```swift
-nav.present(.filter)                          // the trait, else a sheet
-nav.present(.player, as: .cover)              // .sheet, .sheet(detents:), .cover, .cover(zoomFrom:),
-                                              // .popover, .inspector, .window
-nav.dismiss()
+navigator.present(.filter)               // the trait, else a sheet
+navigator.present(.player, as: .cover)   // .sheet, .sheet(detents:), .cover, .cover(zoomFrom:),
+                                         // .popover, .inspector, .window
+navigator.dismiss()
 
-nav.present(PaymentRoute.add, returning: Card.self) { card in   // nil if swiped away
+navigator.present(PaymentRoute.add, returning: Card.self) { card in   // nil if swiped away
     if let card { model.use(card) }
 }
-nav.dismiss(returning: card)                                     // in the presented screen
+navigator.dismiss(returning: card)                                    // in the presented screen
 
-let card = await nav.present(PaymentRoute.add, returning: Card.self)   // or await the result
+let card = await navigator.present(PaymentRoute.add, returning: Card.self)   // or await the result
 ```
 
 For a zoom transition, mark the source with `.navigationZoomSource("photo-1")` and present with
@@ -322,34 +322,42 @@ For a zoom transition, mark the source with `.navigationZoomSource("photo-1")` a
 Texts are `LocalizedStringResource`s, looked up in your string catalog.
 
 ```swift
-nav.confirm("Delete?", message: "…", confirm: "Delete", destructive: true) { model.delete() }
-nav.alert("Saved") { … }
-nav.retry(error) { model.reload() }
+navigator.confirm("Delete?", message: "…", confirm: "Delete", destructive: true) { model.delete() }
+navigator.alert("Saved") { … }
+navigator.retry(error) { model.reload() }
 
-nav.dialog("Share", style: .confirmation) {
+navigator.dialog("Share", style: .confirmation) {
     Dialog.Action("Copy Link") { model.copyLink() }     // each action's closure runs when chosen
     Dialog.Action("Cancel", role: .cancel)
 }
 ```
 
 Every call also has an `async` form that returns the outcome, for code that's already in a `Task`:
-`if await nav.confirm("Delete?") { … }`, `let choice = await nav.dialog("Share") { … }`.
+`if await navigator.confirm("Delete?") { … }`, `let choice = await navigator.dialog("Share") { … }`.
 
 ### Flows, guards and auth
 
 ```swift
-struct Checkout: Flow {                       // a reusable entry point; a plain Route
+struct Checkout: Flow {                              // owns its steps; a plain value
     typealias Result = Order
-    var start: CheckoutRoute { .cart }        // the steps are ordinary routes with screens
+    let cart: Cart                                   // input, seen by every step
+    enum Step: Hashable, Codable, Sendable { case review, payment, done(Order) }
+    var start: Step { .review }
 }
 
-nav.flow(Checkout()) { order in … }           // called only if the flow finishes
-let order = await nav.flow(Checkout())        // or await it: Order?, nil if the user backs out
+struct CheckoutScreens: FlowModule {                 // the whole flow in one switch
+    func body(for step: Checkout.Step, in flow: Checkout, navigator: FlowNavigator<Checkout>) -> some View {
+        switch step {
+        case .review:          ReviewScreen(cart: flow.cart, onNext: { navigator.next(.payment) })
+        case .payment:         PaymentScreen(onPaid: { navigator.next(.done($0)) }, onCancel: { navigator.cancel() })
+        case let .done(order): DoneScreen(onClose: { navigator.finish(order) })    // typed result
+        }
+    }
+}
 
-nav.push(.payment)                            // in a step: continue
-nav.flow(AddressFlow()) { address in nav.push(.review(address)) }   // run another flow as a step
-nav.finishFlow(returning: order)              // end: unwinds exactly the flow's screens
-nav.cancelFlow()                              // abandon: unwinds them, the caller gets nil
+navigator.flow(Checkout(cart: cart)) { order in … }          // runs only if the flow finishes
+let order = await navigator.flow(Checkout(cart: cart))       // Order?, nil if abandoned
+navigator.flow(AddressFlow()) { navigator.next(.pay($0)) }   // in a step: run another flow as a step
 
 FormScreen()
     .navigationGuard(when: hasChanges)                          // built-in "Discard changes?"
@@ -371,7 +379,7 @@ enum AppLinks: DeepLinks {
 }
 ```
 
-- Restoration: `.restoration(.sceneStorage("nav") | .userDefaults("nav") | .custom(load:save:))`
+- Restoration: `.restoration(.sceneStorage("navigator") | .userDefaults("navigator") | .custom(load:save:))`
 - Handoff: `.handoff(activityType: "com.example.view")`
 - State as data: `store.snapshot` (`Codable`), `await store.restore(snapshot)`, `store.currentSteps`
 
@@ -379,12 +387,12 @@ enum AppLinks: DeepLinks {
 
 ```swift
 // A screen's or view model's logic, without views.
-let nav = RecordingNavigator()
-model.didSelect("s1", nav: nav)
-#expect(nav.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
-nav.answerDialogs(with: "Delete")           // or nav.dialogResponse = { … }
-nav.results[AnyRoute(PaymentRoute.add)] = card
-nav.end(.flow)                              // release what was remembered for the flow
+let navigator = RecordingNavigator()
+model.didSelect("s1", navigator: navigator)
+#expect(navigator.actions == [.push(AnyRoute(SpeakersRoute.detail(id: "s1")))])
+navigator.answerDialogs(with: "Delete")   // or navigator.dialogResponse = { … }
+navigator.results[AnyRoute(PaymentRoute.add)] = card
+navigator.end(.flow)                      // release what was remembered for the flow
 
 // Every route has a screen (catches a module missing from .routes(…)).
 #expect(RouteRegistry(appModules).missingViews(for: [ScheduleRoute.self, SpeakersRoute.self]).isEmpty)
@@ -415,7 +423,7 @@ await store.navigate([.select(AppTab.schedule), .push(ScheduleRoute.list)])
 - [Layouts](Documentation/Layouts.md) — single stack, tabs, split, adaptive; `show` and the detail column
 - [Modals & Dialogs](Documentation/ModalsAndDialogs.md) — presentation styles, detents, zoom, windows, awaited results, dialogs
 - [Flows, Guards & Auth](Documentation/FlowsGuardsAndAuth.md) — reusable, composable flows, unsaved-changes guards, the auth gate
-- [Routes & Modules](Documentation/RoutesAndModules.md) — `Route`, `TypedRouteModule`, cross-feature navigation, `RouteLink`
+- [Routes & Modules](Documentation/RoutesAndModules.md) — `Route`, `RouteModule`, cross-feature navigation, `RouteLink`
 - [Deep Linking](Documentation/DeepLinking.md) — `[Step]`, `DeepLinks`, `navigate`
 - [Restoration & Handoff](Documentation/Restoration.md) — snapshots, lossy decoding, versioning
 - [Testing](Documentation/Testing.md) — `RecordingNavigator`, headless `NavigationStore`
@@ -510,7 +518,7 @@ Every screen receives a navigator bound to its `StackNode`. An action is resolve
 | Product | Contents | Depends on |
 |---|---|---|
 | `NavigationKitInterface` | `Route`, `Flow`, `Navigator`, `RouteNavigator`, `Step`, `Dialog`, `PresentationStyle`, events — **no SwiftUI** | Foundation |
-| `NavigationKit` | `NavigationRoot`, `NavigationStore`, `RouteModule`, `RouteRegistry`, guards, restoration | Interface (re-exported) |
+| `NavigationKit` | `NavigationRoot`, `NavigationStore`, `NavigationModule`, `RouteRegistry`, guards, restoration | Interface (re-exported) |
 | `NavigationKitTesting` | `RecordingNavigator` | Interface |
 | `NavigationKitDebug` | `.navigationDebugger()` overlay | NavigationKit |
 

@@ -147,7 +147,7 @@ extension NavigationStore {
 
     private func presentModals(_ saved: NavigationSnapshot.ModalSnapshot?, from presenter: StackNode) async {
         guard let saved else { return }
-        guard let modal = present(saved.stack.root, style: saved.style, from: presenter, isFlow: false) else { return }
+        guard let modal = present(saved.stack.root, style: saved.style, from: presenter) else { return }
         modal.stack.setPath(saved.stack.path.map { Entry(route: $0) }, emit: false)
         if isAttached { await modal.appeared.wait() }
         await presentModals(saved.stack.modal, from: modal.stack)

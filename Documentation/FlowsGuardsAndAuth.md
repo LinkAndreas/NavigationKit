@@ -2,83 +2,98 @@
 
 ## Flows
 
-A flow is a multi-step process that produces a result: checkout, onboarding, a verification. Declare it once, and anyone can start it — or run it as one step of their own flow — without knowing its screens.
+A flow is a multi-step process that owns its steps: checkout, onboarding, a verification. It declares its input, its steps and its result; callers only start it, and only the flow can show its steps.
 
 ```swift
 public struct Checkout: Flow {
-    public typealias Result = Order          // omit for flows that only need to complete
-    public var start: CheckoutRoute { .cart }
+    public typealias Result = Order                  // omit for flows that only need to complete
+    public let cart: Cart                            // input, available in every step
+
+    public enum Step: Hashable, Codable, Sendable {  // not a Route: nothing outside can push it
+        case review, address, payment(Address), done(Order)
+    }
+    public var start: Step { .review }
 }
 ```
 
-A `Flow` is a plain `Route` (it lives in `NavigationKitInterface`, no SwiftUI), so it can have parameters and sit in a contracts package. Its steps are ordinary routes whose screens come from a module, like any other.
+A `Flow` is a plain value in `NavigationKitInterface`, so it can live in a package without SwiftUI.
+
+### Its screens: one `FlowModule`
+
+The whole flow is wired in one `switch`. Each step gets the running flow (with its input) and a `FlowNavigator` typed to this flow:
+
+```swift
+struct CheckoutScreens: FlowModule {
+    func body(for step: Checkout.Step, in flow: Checkout, navigator: FlowNavigator<Checkout>) -> some View {
+        switch step {
+        case .review:
+            ReviewScreen(cart: flow.cart, onNext: { navigator.next(.address) }, onClose: { navigator.cancel() })
+        case .address:
+            AddressScreen(onConfirm: { navigator.next(.payment($0)) })
+        case let .payment(address):
+            PaymentScreen(cart: flow.cart, address: address, onPaid: { navigator.next(.done($0)) })
+        case let .done(order):
+            DoneScreen(order: order, onClose: { navigator.finish(order) })
+        }
+    }
+}
+
+NavigationRoot { … }.routes(CheckoutScreens())
+```
+
+| In a step | Effect |
+|---|---|
+| `navigator.next(.payment(address))` | show the next step — only this flow's steps compile |
+| `navigator.finish(order)` | end the flow and hand `order` to the caller — the type is checked |
+| `navigator.finish()` | end a `Void` flow |
+| `navigator.cancel()` | end the flow; the caller sees it as abandoned (`nil`) |
+| `navigator.pop()`, back swipe | ordinary back navigation between steps |
+
+`FlowNavigator` is a full navigator: `present`, dialogs, `remember` and starting other flows work as everywhere.
 
 ### Starting a flow
 
 ```swift
-nav.flow(Checkout()) { order in receipt.show(order) }   // runs only if the flow finishes
-let order = await nav.flow(Checkout())                  // Order?, nil if the user backed out
-nav.flow(Checkout(), as: .sheet)                        // in a modal
+navigator.flow(Checkout(cart: cart)) { order in receipt.show(order) }   // runs only if it finishes
+let order = await navigator.flow(Checkout(cart: cart))                  // Order?, nil if abandoned
+navigator.flow(Checkout(cart: cart), as: .sheet)                        // in a modal
 ```
 
-On screen, a flow *is* its start step. Without a style, the start step's `presentation` trait decides — a flow whose first step is a sheet runs in a sheet; otherwise it's pushed onto the current stack. The flow also takes `requiresAuth` and `hidesTabBar` from its start step.
+Without a style, the flow's own `presentation` trait decides; `nil` pushes it onto the current stack. Its `hidesTabBar` applies to all its steps, and `requiresAuth` gates its start.
 
-### Inside a flow
-
-Steps continue, finish or cancel; they never name the screen to return to:
-
-```swift
-struct CheckoutScreens: TypedRouteModule {
-    func body(for route: CheckoutRoute, nav: RouteNavigator<CheckoutRoute>) -> some View {
-        switch route {
-        case .cart:
-            CartScreen(onNext: { nav.push(.payment) }, onClose: { nav.cancelFlow() })
-        case .payment:
-            PaymentScreen(onPaid: { order in nav.finishFlow(returning: order) })
-        }
-    }
-}
-```
-
-- `finishFlow(returning:)` unwinds **exactly** the screens the flow added — wherever it started — and hands the result to the caller. A pushed flow pops its screens; a presented flow dismisses its modal.
-- `cancelFlow()` unwinds the same screens, and the caller sees the flow as abandoned (`nil`).
-- Backing out past the first step, or swiping its modal away, also abandons it.
-
-### State and dependencies for one run
-
-A step can remember a value for the flow run it belongs to. Every step of the run gets the same value, and it's released when the run ends — the next run starts fresh:
-
-```swift
-case let .projectUpload(requirement):
-    let draft = nav.remember(for: .flow) { ProofDraft() }
-    ProjectUploadScreen(onNext: {
-        draft.proof.hasDocument = true
-        nav.push(.repositoryLink)
-    })
-```
-
-A nested flow has its own `.flow`; reach the enclosing one with `.flow(HackathonRegistration.self)`. See [Routes & Modules](RoutesAndModules.md#dependencies-and-their-lifetime) for all lifetimes.
+Finishing or cancelling unwinds **exactly** the flow's screens, wherever it started — a pushed flow pops them, a presented flow dismisses its modal. Backing out past the first step, or swiping its modal away, abandons it. A screen pushed or presented *from* a step (a help page, a picker sheet) belongs to the flow too: when the flow ends, it goes with it.
 
 ### Composing flows
 
-Run another flow as one step, and continue with its result:
+A step runs another flow and continues with its result:
 
 ```swift
 case .teamDetails:
-    TeamDetailsScreen { requirement in
-        nav.flow(ProofFlow(requirement: requirement)) { proof in
-            nav.push(.summary(proof))
+    TeamDetailsScreen(onProofRequirementSelected: { requirement in
+        navigator.flow(ProofFlow(requirement: requirement)) { proof in
+            navigator.next(.summary(proof))
         }
+    })
+```
+
+The inner flow's screens unwind when it finishes, and the outer flow continues from the step that started it — Back from the summary goes to team details. If the user backs out of the inner flow, they're on team details again and nothing else happens. The ShowCase app's hackathon registration works this way.
+
+To keep two flows in separate packages that don't know each other, let the app connect them with a closure: the outer module takes a `(any Navigator, (Address) -> Void) -> Void` and the app passes `{ navigator, done in navigator.flow(AddressFlow()) { done($0) } }`.
+
+### State for one run
+
+```swift
+case let .projectUpload(requirement):
+    WithDependency(for: .flow) { ProofDraft() } content: { draft in
+        ProjectUploadScreen(onNext: { draft.hasDocument = true; navigator.next(.repositoryLink) })
     }
 ```
 
-The inner flow's screens are unwound when it finishes, and the outer flow continues from the step that started it — so Back from the summary goes to team details, not into the proof screens. If the user backs out of the inner flow, they're on team details again and nothing else happens.
+Every step of a run gets the same value; it's released when the run's last screen is gone, and the next run starts fresh. A nested flow has its own `.flow`; reach the enclosing one with `.flow(HackathonRegistration.self)`.
 
-The ShowCase app's hackathon registration works this way: `HackathonRegistration` runs `ProofFlow`, which another team could own and reuse.
+### Restoration and deep links
 
-### Flows from plain routes
-
-A flow can also start at a route directly: `nav.flow(CheckoutRoute.cart, returning: Order.self)`. Steps work the same; declaring a `Flow` adds the typed result and a name callers can reuse.
+Steps are `Codable` together with their flow, so restoring brings back a running flow with its input, and `finish` still unwinds it (there's no caller left to receive the result). A deep link or `navigate` step can start a flow with `.push(Checkout(cart: cart))`.
 
 ## Guards
 
@@ -93,7 +108,7 @@ Or decide yourself:
 
 ```swift
 .navigationGuard(when: hasChanges) {
-    await nav.confirm("Leave without saving?", confirm: "Leave", destructive: true)
+    await navigator.confirm("Leave without saving?", confirm: "Leave", destructive: true)
 }
 ```
 
@@ -113,4 +128,4 @@ NavigationRoot { … }
     .authGate(isAuthenticated: { session.isSignedIn }, login: AuthRoute.signIn)
 ```
 
-Navigating to a gated route while signed out presents the login route first. When the login screen calls `nav.dismiss(returning: true)` (and `isAuthenticated` now holds), the original navigation continues. Any other dismissal cancels it. Gating applies to `push`, `open`, `present`, `show` and `flow`.
+Navigating to a gated route while signed out presents the login route first. When the login screen calls `navigator.dismiss(returning: true)` (and `isAuthenticated` now holds), the original navigation continues. Any other dismissal cancels it. Gating applies to `push`, `open`, `present`, `show` and `flow`.

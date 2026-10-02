@@ -8,7 +8,7 @@ public enum AccountRoute: Route {
     case addPaymentMethod
     case settings
 
-    /// Traits keep call sites to a single verb: `nav.open(.addPaymentMethod)` presents a sheet.
+    /// Traits keep call sites to a single verb: `navigator.open(.addPaymentMethod)` presents a sheet.
     public var presentation: PresentationStyle? {
         switch self {
         case .addPaymentMethod: .sheet(detents: [.medium, .large])

@@ -3,8 +3,8 @@
 ## Restoration
 
 ```swift
-NavigationRoot { … }.restoration(.sceneStorage("nav"))
-// or .userDefaults("nav"), or .custom(load: { … }, save: { … })
+NavigationRoot { … }.restoration(.sceneStorage("navigator"))
+// or .userDefaults("navigator"), or .custom(load: { … }, save: { … })
 ```
 
 The store's `snapshot` (`NavigationSnapshot`, `Codable`) is saved whenever navigation changes and restored once when the root appears. Restoration runs in a `.task`, so the very first frame shows the roots before the saved location appears.

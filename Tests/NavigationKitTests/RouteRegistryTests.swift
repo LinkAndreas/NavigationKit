@@ -2,8 +2,8 @@ import SwiftUI
 import Testing
 @testable import NavigationKit
 
-private struct ScheduleScreens: TypedRouteModule {
-    func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+private struct ScheduleScreens: RouteModule {
+    func body(for route: ScheduleRoute, navigator: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
         case .list, .placeholder: Text("List")
         case let .session(id), let .speaker(id): Text(id)
@@ -14,7 +14,7 @@ private struct ScheduleScreens: TypedRouteModule {
 @MainActor
 struct RouteRegistryTests {
     @Test func typedModuleRegistersItsRouteTypeThroughAnyRouteModule() {
-        let modules: [any RouteModule] = [ScheduleScreens()]   // as .routes(…) receives them
+        let modules: [any NavigationModule] = [ScheduleScreens()]   // as .routes(…) receives them
         let registry = RouteRegistry(modules)
 
         #expect(registry.view(for: AnyRoute(ScheduleRoute.list), navigator: UnavailableNavigator()) != nil)
