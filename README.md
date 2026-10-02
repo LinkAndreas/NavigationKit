@@ -83,7 +83,7 @@ Add `NavigationKit` to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "4.0.0")
+    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "4.1.0")
 ]
 ```
 
