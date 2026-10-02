@@ -2,7 +2,7 @@ import NavigationKit
 
 /// Collects proof of a project — a document, a repository link, or both — and returns it.
 ///
-/// Owned by one team and reusable by any other: callers only need `nav.flow(ProofFlow(…))`,
+/// Owned by one team and reusable by any other: callers only need `navigator.flow(ProofFlow(…))`,
 /// never the screens inside it.
 public struct ProofFlow: Flow {
     public typealias Result = Proof
@@ -13,7 +13,13 @@ public struct ProofFlow: Flow {
         self.requirement = requirement
     }
 
-    public var start: ProofRoute {
+    public enum Step: Hashable, Codable, Sendable {
+        case verificationSelection
+        case projectUpload(ProofRequirement)
+        case repositoryLinkEntry(ProofRequirement)
+    }
+
+    public var start: Step {
         switch requirement {
         case .documentOnly, .both: .projectUpload(requirement)
         case .serviceProviderOnly: .repositoryLinkEntry(requirement)
@@ -41,10 +47,4 @@ public struct Proof: Hashable, Codable, Sendable, CustomStringConvertible {
         case (false, false): "None"
         }
     }
-}
-
-public enum ProofRoute: Route {
-    case verificationSelection
-    case projectUpload(ProofRequirement)
-    case repositoryLinkEntry(ProofRequirement)
 }

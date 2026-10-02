@@ -14,18 +14,19 @@ public enum MyConfRoute: Route {
 
 // MARK: - Swag redemption
 
-/// Redeeming a reward. Callers start the flow, not its first screen: `nav.flow(SwagRedemption())`.
+/// Redeeming a reward. Callers start the flow, never its screens: `navigator.flow(SwagRedemption())`.
 public struct SwagRedemption: Flow {
     public init() {}
-    public var start: SwagRedemptionRoute { .swagSelection }
-}
 
-public enum SwagRedemptionRoute: Route {
-    case swagSelection
-    case shippingAddressEntry
-    case billingDetails
-    case paymentMethod
-    case summary
+    public enum Step: Hashable, Codable, Sendable {
+        case swagSelection
+        case shippingAddressEntry
+        case billingDetails
+        case paymentMethod
+        case summary
+    }
+
+    public var start: Step { .swagSelection }
 }
 
 // MARK: - Hackathon registration
@@ -33,12 +34,13 @@ public enum SwagRedemptionRoute: Route {
 /// Registering a hackathon project. The proof step is a separate, reusable flow (``ProofFlow``).
 public struct HackathonRegistration: Flow {
     public init() {}
-    public var start: HackathonRegistrationRoute { .teamSizeSelection }
-}
 
-public enum HackathonRegistrationRoute: Route {
-    case teamSizeSelection
-    case projectCategorySelection
-    case teamDetailsForm
-    case summary(Proof)
+    public enum Step: Hashable, Codable, Sendable {
+        case teamSizeSelection
+        case projectCategorySelection
+        case teamDetailsForm
+        case summary(Proof)
+    }
+
+    public var start: Step { .teamSizeSelection }
 }

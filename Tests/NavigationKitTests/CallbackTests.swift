@@ -29,8 +29,8 @@ private enum Button {
         nav.confirm("Delete?", confirm: "Delete", destructive: true) { outcome.record(true) }
     }
 
-    static func checkout(_ nav: any Navigator, into outcome: Outcome<Bool>) {
-        nav.flow(FlowRoute.step1) { outcome.record($0) }
+    static func onboarding(_ nav: any Navigator, into outcome: Outcome<Bool>) {
+        nav.flow(OnboardingFlow()) { outcome.record(true) }
     }
 }
 
@@ -85,13 +85,17 @@ struct CallbackTests {
         #expect(call.calls == 1)
     }
 
-    @Test func flowReportsWhetherItFinished() async {
-        let nav = RecordingNavigator()                      // no scripted result: abandoned
-        let outcome = Outcome<Bool>()
+    @Test func flowCallsBackOnlyWhenItFinishes() async {
+        let abandoned = RecordingNavigator()                // no scripted result
+        let finished = RecordingNavigator()
+        finished.results[AnyRoute(OnboardingFlow())] = ()
+        let noCall = Outcome<Bool>(), call = Outcome<Bool>()
 
-        Button.checkout(nav, into: outcome)
+        Button.onboarding(abandoned, into: noCall)
+        Button.onboarding(finished, into: call)
         await settle()
 
-        #expect(outcome.value == false)
+        #expect(noCall.calls == 0)
+        #expect(call.calls == 1)
     }
 }

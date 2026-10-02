@@ -24,10 +24,6 @@ enum ScheduleRoute: Route {
     case list, placeholder, session(id: String), speaker(id: String)
 }
 
-enum FlowRoute: Route {
-    case step1, step2, step3
-}
-
 @MainActor
 func makeStore(layout: NavigationLayout = .tabs) -> NavigationStore {
     NavigationStore(layout: layout, selection: AppTab.home, sections: [
@@ -42,30 +38,42 @@ func settle() async {
     for _ in 0..<20 { await Task.yield() }
 }
 
-/// A flow without a result, starting at `FlowRoute.step1`.
+/// A flow without a result.
 struct OnboardingFlow: Flow {
-    var start: FlowRoute { .step1 }
-}
-
-enum ProofStep: Route {
-    case upload(required: Bool), link
+    enum Step: Hashable, Codable, Sendable { case welcome, permissions, profile }
+    var start: Step { .welcome }
 }
 
 /// A reusable flow from "another team", producing a proof string.
 struct ProofFlow: Flow {
     typealias Result = String
+    enum Step: Hashable, Codable, Sendable { case upload(required: Bool), link }
     var required = true
-    var start: ProofStep { .upload(required: required) }
+    var start: Step { .upload(required: required) }
 }
 
-enum RegistrationStep: Route {
-    case team, summary(proof: String)
-
-    var presentation: PresentationStyle? { self == .team ? .sheet : nil }
-}
-
-/// A flow that composes `ProofFlow`; its start step is a sheet, so the flow runs in one.
+/// A flow that composes `ProofFlow` and runs in a sheet.
 struct RegistrationFlow: Flow {
     typealias Result = Int
-    var start: RegistrationStep { .team }
+    enum Step: Hashable, Codable, Sendable { case team, summary(proof: String) }
+    var start: Step { .team }
+    var presentation: PresentationStyle? { .sheet }
+}
+
+/// The navigator a `FlowModule` hands to the topmost step of `F` on screen.
+@MainActor
+func flowNavigator<F: Flow>(_ store: NavigationStore, _: F.Type = F.self) -> FlowNavigator<F> {
+    let step = store.activeStack.entries.reversed().lazy.compactMap { $0.route.as(FlowStepRoute<F>.self) }.first!
+    return FlowNavigator(store.navigator, flow: step.flow, run: step.run)
+}
+
+/// The steps of `F` currently on screen, in order.
+@MainActor
+func shownSteps<F: Flow>(_ store: NavigationStore, _: F.Type) -> [F.Step] {
+    store.currentSteps.compactMap { step -> F.Step? in
+        switch step {
+        case let .push(route), let .present(route, _), let .show(route): route.as(FlowStepRoute<F>.self)?.step
+        case .select: nil
+        }
+    }
 }

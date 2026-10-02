@@ -5,7 +5,7 @@ import Foundation
 /// ``Navigator/navigate(_:)`` and `NavigationStore/currentSteps` all speak this language.
 ///
 /// ```swift
-/// nav.navigate([
+/// navigator.navigate([
 ///     .select(AppTab.schedule),
 ///     .push(ScheduleRoute.session(id: "42")),
 /// ])

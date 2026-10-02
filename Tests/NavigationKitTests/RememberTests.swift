@@ -35,11 +35,11 @@ struct RememberTests {
         await settle()
         do {
             let session = nav.remember(for: .flow) { Session() }
-            nav.push(FlowRoute.step2)
+            flowNavigator(store, OnboardingFlow.self).next(.permissions)
             #expect(nav.remember(for: .flow) { Session() } === session)
             released = session
         }
-        nav.finishFlow()
+        flowNavigator(store, OnboardingFlow.self).finish()
         await settle()
 
         #expect(released == nil)
@@ -60,7 +60,7 @@ struct RememberTests {
         nav.flow(OnboardingFlow()) {}
         await settle()
         let secondRun = nav.remember(for: .flow) { Session() }
-        nav.cancelFlow()
+        flowNavigator(store, OnboardingFlow.self).cancel()
         await settle()
         #expect(store.currentSteps.isEmpty)
         _ = secondRun
@@ -82,7 +82,7 @@ struct RememberTests {
         #expect(nav.remember(for: .flow(OnboardingFlow.self)) { Session() } === outer)
         #expect(nav.remember(for: .flow(ProofFlow.self)) { Session() } === inner)
 
-        nav.finishFlow(returning: "proof")
+        flowNavigator(store, ProofFlow.self).finish("proof")
         await settle()
         #expect(nav.remember(for: .flow) { Session() } === outer)    // back in the outer flow
     }
@@ -92,16 +92,39 @@ struct RememberTests {
         let nav = store.navigator
         weak var released: Session?
 
-        nav.flow(RegistrationFlow()) { _ in }                // its start step is a sheet
+        nav.flow(RegistrationFlow()) { _ in }                // runs in a sheet
         await settle()
         do {
             let session = nav.remember(for: .flow) { Session() }
-            nav.push(RegistrationStep.summary(proof: "doc"))
+            flowNavigator(store, RegistrationFlow.self).next(.summary(proof: "doc"))
             #expect(nav.remember(for: .flow) { Session() } === session)
             released = session
         }
         nav.dismiss()
         await settle()
+
+        #expect(released == nil)
+    }
+
+    @Test func restoredFlowRunSharesItsValueUntilItsLastScreenLeaves() async throws {
+        let original = NavigationStore(root: HomeRoute.feed)
+        original.navigator.flow(ProofFlow()) { _ in }
+        await settle()
+        flowNavigator(original, ProofFlow.self).next(.link)
+        let data = try JSONEncoder().encode(original.snapshot)
+
+        let store = NavigationStore(root: HomeRoute.feed)
+        await store.restore(try JSONDecoder().decode(NavigationSnapshot.self, from: data))
+        let nav = store.navigator
+        weak var released: Session?
+
+        do {
+            let session = nav.remember(for: .flow) { Session() }      // on .link
+            store.navigator.pop()                                      // back to .upload: same run
+            #expect(nav.remember(for: .flow) { Session() } === session)
+            released = session
+        }
+        store.navigator.pop()                                          // the run's last screen leaves
 
         #expect(released == nil)
     }
@@ -169,12 +192,12 @@ struct RememberTests {
 }
 
 @MainActor
-struct RememberViewTests {
+struct WithDependencyTests {
     @Test func passesTheSameValueToItsContentOnEveryRender() {
         let nav = RecordingNavigator()
         var created = 0
         var received: [ObjectIdentifier] = []
-        let view = Remember(for: .flow) { created += 1; return Session() } content: { session in
+        let view = WithDependency(for: .flow) { created += 1; return Session() } content: { session in
             let _ = received.append(ObjectIdentifier(session))
             Color.clear.frame(width: 1, height: 1)
         }
@@ -191,8 +214,8 @@ struct RememberViewTests {
     @Test func nestedWrappersComposeTheirValues() {
         let nav = RecordingNavigator()
         var sessionsMadeWith: [ObjectIdentifier] = []
-        let view = Remember(for: .window) { Cache() } content: { cache in
-            Remember(for: .flow) { () -> Session in
+        let view = WithDependency(for: .window) { Cache() } content: { cache in
+            WithDependency(for: .flow) { () -> Session in
                 sessionsMadeWith.append(ObjectIdentifier(cache))
                 return Session()
             } content: { _ in Color.clear.frame(width: 1, height: 1) }

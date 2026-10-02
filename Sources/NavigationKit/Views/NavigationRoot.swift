@@ -11,7 +11,7 @@ import SwiftUI
 /// .layout(.adaptive)
 /// .routes(ScheduleModule(), SpeakersModule())
 /// .deepLinks(AppLinks.self)
-/// .restoration(.sceneStorage("nav"))
+/// .restoration(.sceneStorage("navigator"))
 /// ```
 public struct NavigationRoot: View {
     @State private var store: NavigationStore
@@ -23,7 +23,7 @@ public struct NavigationRoot: View {
 
     private var layout: NavigationLayout?
     private var registry: RouteRegistry?
-    private var modules: [any RouteModule] = []
+    private var modules: [any NavigationModule] = []
     private var deepLinks: (@MainActor (URL) -> [Step]?)?
     private var authCheck: (@MainActor () -> Bool)?
     private var loginRoute: AnyRoute?
@@ -163,14 +163,14 @@ public struct NavigationRoot: View {
 
     /// Feature modules that map routes to views. Call it as often as you like; the modules add up:
     /// `.routes(CartModule()).routes(ProductModule())` equals `.routes(CartModule(), ProductModule())`.
-    public func routes(_ modules: any RouteModule...) -> NavigationRoot {
+    public func routes(_ modules: any NavigationModule...) -> NavigationRoot {
         var copy = self
         copy.modules += modules
         return copy
     }
 
     /// Feature modules that map routes to views, as an array.
-    public func routes(_ modules: [any RouteModule]) -> NavigationRoot {
+    public func routes(_ modules: [any NavigationModule]) -> NavigationRoot {
         var copy = self
         copy.modules += modules
         return copy
@@ -196,7 +196,7 @@ public struct NavigationRoot: View {
     }
 
     /// Routes with `Route/requiresAuth` first present `login` when `isAuthenticated` is false,
-    /// then continue to their destination once the login screen calls `nav.dismiss(returning: true)`.
+    /// then continue to their destination once the login screen calls `navigator.dismiss(returning: true)`.
     public func authGate<Login: Route>(isAuthenticated: @escaping @MainActor () -> Bool, login: Login) -> NavigationRoot {
         var copy = self
         copy.authCheck = isAuthenticated

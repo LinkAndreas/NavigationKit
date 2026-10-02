@@ -11,6 +11,34 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-02
+
+### Added
+
+- Flows own their steps. A `Flow` declares its input (its properties), `Step` (a nested enum, not a
+  route — nothing outside the flow can show it) and `Result`. One `FlowModule` wires all its screens;
+  each step gets the flow and a `FlowNavigator` with `next(_:)`, `finish(_:)`/`finish()` and
+  `cancel()`, whose step and result types are checked by the compiler.
+- Finishing works for restored and deep-linked flows, and from screens pushed or presented by a step.
+- `remember(for: .flow)` keeps one value per flow run — also for restored and deep-linked runs — and
+  releases it when the run's last screen is gone.
+- `RecordingNavigator.steps(of:)` lists the steps a `FlowNavigator` showed.
+
+### Changed
+
+- **Breaking:** `TypedRouteModule` is now `RouteModule`, and the general protocol (formerly
+  `RouteModule`) is `NavigationModule`. `FlowModule` sits next to `RouteModule`.
+- **Breaking:** module bodies take `navigator:` instead of `nav:`.
+- **Breaking:** `Remember` is now `WithDependency`.
+- **Breaking:** a flow's `presentation`, `hidesTabBar` and `requiresAuth` are its own traits, no longer
+  taken from its first step.
+
+### Removed
+
+- **Breaking:** flows started from a plain route (`flow(_:as:returning:)`, `flow(_:as:) -> Bool` and
+  their callback forms), `finishFlow(returning:)`, `finishFlow()` and `cancelFlow()`. Use a `Flow` and
+  its `FlowNavigator`. See [Migration](Documentation/Migration.md).
+
 ## [3.2.0] - 2026-10-02
 
 ### Added
@@ -377,7 +405,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...v3.1.0

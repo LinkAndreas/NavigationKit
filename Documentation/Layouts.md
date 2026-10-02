@@ -29,7 +29,7 @@ NavigationRoot(selection: AppTab.schedule) {
 .layout(.adaptive)
 ```
 
-A section's id is any `Hashable & Sendable` value — usually an enum. It is what `nav.select(_:)`, `Step.select(_:)` and `store.selection(as:)` use. Titles are `LocalizedStringResource`s, so string literals are looked up in your string catalog.
+A section's id is any `Hashable & Sendable` value — usually an enum. It is what `navigator.select(_:)`, `Step.select(_:)` and `store.selection(as:)` use. Titles are `LocalizedStringResource`s, so string literals are looked up in your string catalog.
 
 Sections can be built from data too: `RootSectionsBuilder` accepts `if`, `for` and arrays of `RootSection`. Roots are `any Route`, so the tabs can use different route types:
 
@@ -66,7 +66,7 @@ wherever the layout has one; the tab bar in compact width still shows the sectio
 
 A section with a `detail:` gets a three-column split view in regular width: sidebar, the section's main stack, and a detail stack starting at the placeholder route.
 
-`nav.show(route)` expresses "display this item":
+`navigator.show(route)` expresses "display this item":
 
 - In a split layout it **replaces** the detail column with `route`. Pushes from a detail screen stay in the detail column.
 - In compact width (or a section without detail) it **pushes** onto the current stack.

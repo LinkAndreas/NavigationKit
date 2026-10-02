@@ -16,7 +16,7 @@ public protocol Navigator: Sendable {
     func perform(_ action: NavigationAction) -> Bool
 
     /// Performs an action that produces a value — `.present` or `.flow` — and suspends until the
-    /// presented screen or flow finishes. Returns `nil` if it was cancelled (e.g. swiped away).
+    /// presented screen is dismissed or the flow finishes. Returns `nil` if it was cancelled (e.g. swiped away).
     @MainActor
     func result(of action: NavigationAction) async -> (any Sendable)?
 
@@ -27,8 +27,8 @@ public protocol Navigator: Sendable {
     /// Returns the value remembered for `lifetime`, creating it with `make` the first time.
     ///
     /// ```swift
-    /// let api     = nav.remember(for: .window) { CheckoutAPI() }
-    /// let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }
+    /// let api     = navigator.remember(for: .window) { CheckoutAPI() }
+    /// let session = navigator.remember(for: .flow)   { CheckoutSession(api: api) }
     /// ```
     ///
     /// - The value is created only when first asked for, never up front.
@@ -38,7 +38,7 @@ public protocol Navigator: Sendable {
     /// Values are told apart by type: to keep two values of the same type, wrap them in distinct
     /// types. The type is the one `make` returns as the compiler infers it — when it can't infer
     /// it from the closure (e.g. one with several statements), annotate it:
-    /// `let api: CheckoutAPI = nav.remember(for: .window) { … }`.
+    /// `let api: CheckoutAPI = navigator.remember(for: .window) { … }`.
     ///
     /// A screen that leaves its stack keeps its values while it animates out; they're released
     /// once its view is gone. See ``Lifetime`` for when each lifetime ends.
@@ -102,31 +102,6 @@ public extension Navigator {
     /// (for example, in compact width).
     func show<R: Route>(_ route: R) { perform(.show(AnyRoute(route))) }
 
-    // MARK: Flows
-
-    /// Starts a multi-step flow at `route` and waits for it to finish via ``finishFlow(returning:)``.
-    /// Without a style the flow is pushed onto the current stack; finishing unwinds exactly the
-    /// screens the flow added, wherever it started. Returns `nil` if the user backed out.
-    func flow<R: Route, T: Sendable>(
-        _ route: R,
-        as style: PresentationStyle? = nil,
-        returning: T.Type
-    ) async -> T? {
-        await result(of: .flow(AnyRoute(route), style)) as? T
-    }
-
-    /// Starts a flow that produces no value. Returns `true` if it finished, `false` if abandoned.
-    @discardableResult @_disfavoredOverload
-    func flow<R: Route>(_ route: R, as style: PresentationStyle? = nil) async -> Bool {
-        await result(of: .flow(AnyRoute(route), style)) != nil
-    }
-
-    /// Ends the innermost running flow, unwinding its screens.
-    func finishFlow<T: Sendable>(returning value: T) { perform(.finishFlow(result: value)) }
-
-    /// Ends the innermost running flow, unwinding its screens.
-    func finishFlow() { perform(.finishFlow(result: true)) }
-
     // MARK: Paths & deep links
 
     /// Replaces the current location with `steps`, starting from the selected section's root.
@@ -141,7 +116,7 @@ public extension Navigator {
     /// Shows a dialog built from its actions and returns the chosen action's ID.
     ///
     /// ```swift
-    /// let choice = await nav.dialog("Delete draft?", style: .confirmation) {
+    /// let choice = await navigator.dialog("Delete draft?", style: .confirmation) {
     ///     Dialog.Action("Delete", role: .destructive)
     ///     Dialog.Action("Cancel", role: .cancel)
     /// }
@@ -190,14 +165,14 @@ public extension Navigator {
 // MARK: - Callbacks
 
 /// Callback variants of the awaited calls, for call sites that would rather not start a `Task`:
-/// a button action can present, ask or start a flow and handle the outcome in a closure.
+/// a button action can present or ask and handle the outcome in a closure.
 ///
 /// ```swift
-/// nav.present(PaymentRoute.add, returning: Card.self) { card in
+/// navigator.present(PaymentRoute.add, returning: Card.self) { card in
 ///     if let card { model.use(card) }
 /// }
 ///
-/// nav.dialog("Share", style: .confirmation) {
+/// navigator.dialog("Share", style: .confirmation) {
 ///     Dialog.Action("Copy Link") { model.copyLink() }
 ///     Dialog.Action("Cancel", role: .cancel)
 /// }
@@ -214,28 +189,6 @@ public extension Navigator {
         onDismiss: @escaping @MainActor (T?) -> Void
     ) {
         Task { @MainActor in onDismiss(await present(route, as: style, returning: T.self)) }
-    }
-
-    /// Starts a flow and calls `onFinish` with the value passed to ``finishFlow(returning:)``, or
-    /// `nil` if the user backed out.
-    func flow<R: Route, T: Sendable>(
-        _ route: R,
-        as style: PresentationStyle? = nil,
-        returning: T.Type,
-        onFinish: @escaping @MainActor (T?) -> Void
-    ) {
-        Task { @MainActor in onFinish(await flow(route, as: style, returning: T.self)) }
-    }
-
-    /// Starts a flow that produces no value and calls `onFinish` with `true` if it finished,
-    /// `false` if it was abandoned.
-    @_disfavoredOverload
-    func flow<R: Route>(
-        _ route: R,
-        as style: PresentationStyle? = nil,
-        onFinish: @escaping @MainActor (Bool) -> Void
-    ) {
-        Task { @MainActor in onFinish(await flow(route, as: style)) }
     }
 
     /// Shows a dialog; the chosen action's handler runs, and `onDismiss` runs if the dialog is
@@ -293,9 +246,9 @@ public extension Navigator {
 }
 
 /// A navigator that knows the route type of the screen it was handed to, so call sites can use
-/// leading-dot syntax for their own feature's routes: `nav.push(.detail(id: id))`.
+/// leading-dot syntax for their own feature's routes: `navigator.push(.detail(id: id))`.
 ///
-/// Routes of other features still work: `nav.push(ScheduleRoute.list)`.
+/// Routes of other features still work: `navigator.push(ScheduleRoute.list)`.
 public struct RouteNavigator<R: Route>: Navigator {
     public let base: any Navigator
 
@@ -334,12 +287,6 @@ public struct RouteNavigator<R: Route>: Navigator {
         await result(of: .present(AnyRoute(route), style)) as? T
     }
     @MainActor public func show(_ route: R) { perform(.show(AnyRoute(route))) }
-    @MainActor public func flow<T: Sendable>(_ route: R, as style: PresentationStyle? = nil, returning: T.Type) async -> T? {
-        await result(of: .flow(AnyRoute(route), style)) as? T
-    }
-    @MainActor @discardableResult public func flow(_ route: R, as style: PresentationStyle? = nil) async -> Bool {
-        await result(of: .flow(AnyRoute(route), style)) != nil
-    }
 }
 
 /// The navigator a view sees when it isn't inside a `NavigationRoot` (e.g. a bare preview).

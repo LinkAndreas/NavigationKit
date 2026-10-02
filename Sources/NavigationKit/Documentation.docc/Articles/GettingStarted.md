@@ -13,10 +13,10 @@ enum SpeakersRoute: Route {
 ## Give them screens
 
 ```swift
-struct SpeakersModule: TypedRouteModule {
-    func body(for route: SpeakersRoute, nav: RouteNavigator<SpeakersRoute>) -> some View {
+struct SpeakersModule: RouteModule {
+    func body(for route: SpeakersRoute, navigator: RouteNavigator<SpeakersRoute>) -> some View {
         switch route {
-        case .overview: SpeakerList(onSelect: { nav.push(.detail(id: $0)) })
+        case .overview: SpeakerList(onSelect: { navigator.push(.detail(id: $0)) })
         case let .detail(id): SpeakerDetail(id: id)
         }
     }
@@ -37,10 +37,10 @@ struct ContentView: View {
 ## Navigate
 
 ```swift
-nav.push(.detail(id: "s1"))
-nav.present(ComposeRoute.new, as: .sheet(detents: [.medium]))
-if await nav.confirm("Discard draft?", destructive: true) { nav.dismiss() }
-let order = await nav.flow(Checkout())     // a reusable Flow with a typed result
+navigator.push(.detail(id: "s1"))
+navigator.present(ComposeRoute.new, as: .sheet(detents: [.medium]))
+if await navigator.confirm("Discard draft?", destructive: true) { navigator.dismiss() }
+let order = await navigator.flow(Checkout())     // a reusable Flow with a typed result
 ```
 
 ## Next steps

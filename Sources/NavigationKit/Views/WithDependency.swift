@@ -1,20 +1,20 @@
 import SwiftUI
 
-/// Keeps a value for a ``Lifetime`` and passes it to its content — the view form of
+/// Keeps a dependency for a ``Lifetime`` and passes it to its content — the view form of
 /// ``Navigator/remember(for:_:)``.
 ///
 /// ```swift
 /// case .review:
-///     Remember(for: .flow) { CheckoutSession() } content: { session in
-///         ReviewScreen(session: session, onNext: { nav.push(.payment) })
+///     WithDependency(for: .flow) { CheckoutSession() } content: { session in
+///         ReviewScreen(session: session, onNext: { navigator.push(.payment) })
 ///     }
 /// ```
 ///
 /// Wrappers nest, so the composition is visible where screens are wired:
 ///
 /// ```swift
-/// Remember(for: .window) { CheckoutAPI() } content: { api in
-///     Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
+/// WithDependency(for: .window) { CheckoutAPI() } content: { api in
+///     WithDependency(for: .flow) { CheckoutSession(api: api) } content: { session in
 ///         ReviewScreen(session: session)
 ///     }
 /// }
@@ -24,7 +24,7 @@ import SwiftUI
 /// the same value on every later render, released when the lifetime ends. It uses the navigator
 /// of the screen it's in, so it keeps values inside screens NavigationKit shows; elsewhere (a bare
 /// preview) `make` runs on every render.
-public struct Remember<Value, Content: View>: View {
+public struct WithDependency<Value, Content: View>: View {
     private let lifetime: Lifetime
     private let make: () -> Value
     private let content: (Value) -> Content
