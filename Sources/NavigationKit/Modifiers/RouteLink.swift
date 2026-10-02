@@ -58,7 +58,7 @@ public extension RouteLink where Label == Text {
 public struct RouteWindows: Scene {
     private let registry: RouteRegistry
 
-    public init(_ modules: any RouteModule...) {
+    public init(_ modules: any NavigationModule...) {
         registry = RouteRegistry(modules)
     }
 
@@ -77,7 +77,7 @@ public struct RouteWindows: Scene {
 
 public extension Route {
     /// A screen in a working navigation context, for `#Preview`, using `modules` to resolve views.
-    @MainActor func preview(using modules: any RouteModule...) -> some View {
+    @MainActor func preview(using modules: any NavigationModule...) -> some View {
         NavigationRoot(self).routes(RouteRegistry(modules))
     }
 }

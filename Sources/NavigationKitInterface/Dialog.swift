@@ -8,7 +8,7 @@ import Foundation
 /// Dialogs are awaited rather than wired up with state:
 ///
 /// ```swift
-/// let choice = await nav.dialog(Dialog("Delete draft?", style: .confirmation) {
+/// let choice = await navigator.dialog(Dialog("Delete draft?", style: .confirmation) {
 ///     Dialog.Action("Delete", role: .destructive)
 ///     Dialog.Action("Cancel", role: .cancel)
 /// })

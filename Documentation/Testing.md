@@ -6,26 +6,40 @@
 import NavigationKitTesting
 
 @Test @MainActor func confirmingDeleteNavigatesBack() async {
-    let nav = RecordingNavigator()
-    nav.answerDialogs(with: "Delete")
+    let navigator = RecordingNavigator()
+    navigator.answerDialogs(with: "Delete")
 
-    await DraftModel(nav: nav).delete()
+    await DraftModel(navigator: navigator).delete()
 
-    #expect(nav.dialogs.first?.title == "Delete draft?")
-    #expect(nav.actions == [.pop])
+    #expect(navigator.dialogs.first?.title == "Delete draft?")
+    #expect(navigator.actions == [.pop])
 }
 ```
 
-Script async answers: `nav.results[AnyRoute(PickerRoute.color)] = Color.red` for `present(_:returning:)` and `flow`, and `nav.dialogResponse` for any dialog.
+Script async answers: `navigator.results[AnyRoute(PickerRoute.color)] = Color.red` for `present(_:returning:)` and `flow`, and `navigator.dialogResponse` for any dialog.
+
+A flow's screens get a `FlowNavigator`; build one on a recorder and check which steps it showed and how it finished:
+
+```swift
+@Test @MainActor func payingFinishesCheckout() {
+    let recorder = RecordingNavigator()
+    let navigator = FlowNavigator(recorder, flow: Checkout(cart: .sample))
+
+    PaymentModel(navigator: navigator).didPay(order: .sample)
+
+    #expect(recorder.steps(of: Checkout.self) == [.done(.sample)])        // shown with next(_:)
+    #expect(recorder.actions.last == .finishFlow(result: Order.sample))   // or .finishFlow(result: nil) for cancel()
+}
+```
 
 `remember(for:)` keeps values per lifetime until you end it:
 
 ```swift
-let first = nav.remember(for: .flow) { CheckoutSession() }
-#expect(nav.remember(for: .flow) { CheckoutSession() } === first)
+let first = navigator.remember(for: .flow) { CheckoutSession() }
+#expect(navigator.remember(for: .flow) { CheckoutSession() } === first)
 
-nav.end(.flow)                                           // as if the run had finished
-#expect(nav.remember(for: .flow) { CheckoutSession() } !== first)
+navigator.end(.flow)                                           // as if the run had finished
+#expect(navigator.remember(for: .flow) { CheckoutSession() } !== first)
 ```
 
 ## Navigation behavior: a headless store

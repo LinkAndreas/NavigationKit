@@ -3,22 +3,22 @@
 ## One vocabulary
 
 ```swift
-nav.present(route)                                   // route's `presentation` trait, else .sheet
-nav.present(route, as: .sheet)
-nav.present(route, as: .sheet(detents: [.medium, .large]))
-nav.present(route, as: .cover)                       // full-screen cover on iOS, sheet on macOS
-nav.present(route, as: .cover(zoomFrom: "photo-42")) // zoom transition from a source view
-nav.present(route, as: .popover)
-nav.present(route, as: .inspector)
-nav.present(route, as: .window)                      // new window where supported, else sheet
-nav.dismiss()
+navigator.present(route)                                   // route's `presentation` trait, else .sheet
+navigator.present(route, as: .sheet)
+navigator.present(route, as: .sheet(detents: [.medium, .large]))
+navigator.present(route, as: .cover)                       // full-screen cover on iOS, sheet on macOS
+navigator.present(route, as: .cover(zoomFrom: "photo-42")) // zoom transition from a source view
+navigator.present(route, as: .popover)
+navigator.present(route, as: .inspector)
+navigator.present(route, as: .window)                      // new window where supported, else sheet
+navigator.dismiss()
 ```
 
 Each presented route gets its own stack, so `push` inside a sheet just works, and presenting from a sheet stacks another modal on top. `dismiss()` closes the nearest modal — from any depth of its stack.
 
 ### Traits
 
-Let the route decide, keep the call site to `nav.open(route)`:
+Let the route decide, keep the call site to `navigator.open(route)`:
 
 ```swift
 var presentation: PresentationStyle? {
@@ -37,7 +37,7 @@ Mark the source and present with its id:
 ```swift
 PhotoThumbnail(photo).navigationZoomSource(photo.id)
 // …
-nav.present(PhotoRoute.viewer(photo.id), as: .cover(zoomFrom: photo.id))
+navigator.present(PhotoRoute.viewer(photo.id), as: .cover(zoomFrom: photo.id))
 ```
 
 ### Windows
@@ -60,31 +60,31 @@ On iPhone (or anywhere multiple windows aren't supported) `.window` falls back t
 A presented screen hands a value back with `dismiss(returning:)`. Handle it in a callback:
 
 ```swift
-nav.present(ColorRoute.picker, returning: Color.self) { color in
+navigator.present(ColorRoute.picker, returning: Color.self) { color in
     if let color { theme.accent = color }
 }
 // in the picker:
-nav.dismiss(returning: selectedColor)
+navigator.dismiss(returning: selectedColor)
 ```
 
-or, from async code, await it: `let color = await nav.present(ColorRoute.picker, returning: Color.self)`.
+or, from async code, await it: `let color = await navigator.present(ColorRoute.picker, returning: Color.self)`.
 
-The result is `nil` if the modal was closed any other way — swiped down, tapped outside, dismissed by a tab switch or deep link. Every presentation resolves exactly once, including modals nested inside a dismissed modal. Flows work the same way: `nav.flow(CheckoutRoute.cart, returning: Order.self) { order in … }`.
+The result is `nil` if the modal was closed any other way — swiped down, tapped outside, dismissed by a tab switch or deep link. Every presentation resolves exactly once, including modals nested inside a dismissed modal. Flows work the same way: `navigator.flow(Checkout(cart: cart)) { order in … }` — see [Flows, Guards & Auth](FlowsGuardsAndAuth.md).
 
 ## Dialogs
 
 Each action carries what happens when it's chosen:
 
 ```swift
-nav.confirm("Delete draft?", confirm: "Delete", destructive: true) {
+navigator.confirm("Delete draft?", confirm: "Delete", destructive: true) {
     drafts.delete(draft)
 }
 
-nav.alert("Saved", message: "Your changes are live.") { … }
+navigator.alert("Saved", message: "Your changes are live.") { … }
 
-nav.retry(error) { Task { await upload() } }
+navigator.retry(error) { Task { await upload() } }
 
-nav.dialog("Share", style: .confirmation) {
+navigator.dialog("Share", style: .confirmation) {
     Dialog.Action("Copy Link") { pasteboard.copy(link) }
     Dialog.Action("Message") { compose(link) }
     Dialog.Action("Cancel", role: .cancel)
@@ -98,10 +98,10 @@ The callback forms start the presentation on the next main-actor turn, so they s
 ```swift
 while true {
     do { try await upload(); break }
-    catch { guard await nav.retry(error) else { break } }
+    catch { guard await navigator.retry(error) else { break } }
 }
 
-let choice = await nav.dialog("Share", style: .confirmation) {
+let choice = await navigator.dialog("Share", style: .confirmation) {
     Dialog.Action("Copy Link", id: "copy")
     Dialog.Action("Cancel", role: .cancel)
 }

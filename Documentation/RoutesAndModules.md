@@ -16,15 +16,25 @@ Routes never contain views. That keeps them in `NavigationKitInterface` territor
 
 ## Modules
 
-Screens come from modules. When a module covers one route type, conform to `TypedRouteModule`. Its screens are an exhaustive `switch`, so a new case without a screen is a compile error, and `register(in:)` and `routeTypes` come for free:
+Screens come from modules, in three kinds:
+
+| Module | Provides |
+|---|---|
+| `RouteModule` | the screens for one route type, as one exhaustive `switch` |
+| `FlowModule` | the screens for one flow's steps — see [Flows](FlowsGuardsAndAuth.md#flows) |
+| `NavigationModule` | anything else: several types, bundling other modules, custom registration |
+
+`RouteModule` and `FlowModule` are `NavigationModule`s; `.routes(…)` takes any of them.
+
+When a module covers one route type, conform to `RouteModule`. Its screens are an exhaustive `switch`, so a new case without a screen is a compile error, and `register(in:)` and `routeTypes` come for free:
 
 ```swift
-public struct ScheduleModule: TypedRouteModule {
+public struct ScheduleModule: RouteModule {
     let avatars: AvatarProvider
 
-    public func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
+    public func body(for route: ScheduleRoute, navigator: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
-        case .list: ScheduleView(onSelect: { nav.show(.session(id: $0)) })
+        case .list: ScheduleView(onSelect: { navigator.show(.session(id: $0)) })
         case let .session(id): SessionView(id: id, avatars: avatars)
         }
     }
@@ -33,20 +43,20 @@ public struct ScheduleModule: TypedRouteModule {
 NavigationRoot { … }.routes(ScheduleModule(avatars: avatars), DiscoverModule())
 ```
 
-`RouteNavigator<ScheduleRoute>` is a navigator that knows your route type, which enables leading-dot syntax. Other features' routes still work: `nav.push(SpeakersRoute.list)`.
+`RouteNavigator<ScheduleRoute>` is a navigator that knows your route type, which enables leading-dot syntax. Other features' routes still work: `navigator.push(SpeakersRoute.list)`.
 
 Call `.routes(…)` as often as you like — `.routes(CartModule()).routes(ProductModule())` equals `.routes(CartModule(), ProductModule())`.
 
 ### Several route types in one module
 
-Conform to `RouteModule` and register each type, or add other modules — handy for a feature that ships one module for all its screens and flows:
+Conform to `NavigationModule` and register each type, or add other modules — handy for a feature that ships one module for all its screens and flows:
 
 ```swift
-public struct MyConfModule: RouteModule {
+public struct MyConfModule: NavigationModule {
     public func register(in registry: RouteRegistry) {
-        registry.add(MyConfScreens())                 // TypedRouteModules
-        registry.add(CheckoutScreens())
-        registry.register { (route: LegacyRoute, nav) in LegacyScreen(route) }
+        registry.add(MyConfScreens())                 // a RouteModule
+        registry.add(CheckoutScreens())               // a FlowModule
+        registry.register { (route: LegacyRoute, navigator) in LegacyScreen(route) }
     }
 }
 ```
@@ -58,16 +68,14 @@ A route without a registered screen shows a visible "unregistered route" placeho
 Screens get their dependencies through plain initializers, from the module. The module decides how long each one lives with `remember(for:)`:
 
 ```swift
-public struct CheckoutModule: TypedRouteModule {
-    public init() {}
+struct CheckoutScreens: FlowModule {
+    func body(for step: Checkout.Step, in flow: Checkout, navigator: FlowNavigator<Checkout>) -> some View {
+        let api     = navigator.remember(for: .window) { CheckoutAPI() }
+        let session = navigator.remember(for: .flow)   { CheckoutSession(api: api, cart: flow.cart) }
 
-    public func body(for route: CheckoutRoute, nav: RouteNavigator<CheckoutRoute>) -> some View {
-        let api     = nav.remember(for: .window) { CheckoutAPI() }
-        let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }
-
-        switch route {
-        case .review:  ReviewScreen(session: session, onNext: { nav.push(.payment) })
-        case .payment: PaymentScreen(session: session, onPaid: { nav.finishFlow(returning: $0) })
+        switch step {
+        case .review:  ReviewScreen(session: session, onNext: { navigator.next(.payment) })
+        case .payment: PaymentScreen(session: session, onPaid: { navigator.finish($0) })
         }
     }
 }
@@ -86,19 +94,19 @@ The rules:
 | `.flow(Checkout.self)` | like `.flow`, for that enclosing flow — also from inside a nested one | when that flow's run ends |
 | `.window` | when the first screen asks | when the `NavigationRoot` goes away (normally one per window) |
 
-Outside a flow, `.flow` means the screen. Values are told apart by type: to keep two values of the same type, wrap them in distinct types. If the compiler can't infer the type from the closure — for example one with several statements — annotate it: `let api: CheckoutAPI = nav.remember(for: .window) { … }`.
+Outside a flow, `.flow` means the screen. Values are told apart by type: to keep two values of the same type, wrap them in distinct types. If the compiler can't infer the type from the closure — for example one with several statements — annotate it: `let api: CheckoutAPI = navigator.remember(for: .window) { … }`.
 
 A screen that leaves its stack keeps its values while it animates out; they're released once, when its view is gone.
 
-### As a view: `Remember`
+### As a view: `WithDependency`
 
-`Remember` does the same in view form. Nesting wrappers makes the composition visible where screens are wired, and screens still get plain values:
+`WithDependency` does the same in view form. Nesting wrappers makes the composition visible where screens are wired, and screens still get plain values:
 
 ```swift
 case .review:
-    Remember(for: .window) { CheckoutAPI() } content: { api in
-        Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
-            ReviewScreen(session: session, onNext: { nav.push(.payment) })
+    WithDependency(for: .window) { CheckoutAPI() } content: { api in
+        WithDependency(for: .flow) { CheckoutSession(api: api, cart: flow.cart) } content: { session in
+            ReviewScreen(session: session, onNext: { navigator.next(.payment) })
         }
     }
 ```
@@ -107,7 +115,7 @@ It uses the navigator of the screen it's in, so it keeps values inside screens N
 
 Rewiring is one word: `.screen`, `.flow` or `.window`. For a dependency that only part of a flow needs, make that part its own `Flow` — `.flow` inside it then means just that part.
 
-The feature owns all of this; the app only lists `CheckoutModule()`. Calling `remember` in `body` is safe: `body` runs on every render, and every call after the first returns the same value.
+The feature owns all of this; the app only lists `CheckoutScreens()`. Calling `remember` in `body` is safe: `body` runs on every render, and every call after the first returns the same value.
 
 ### Checking that every route has a screen
 
@@ -127,11 +135,11 @@ A module you forgot to pass to `.routes(…)` then fails CI instead of showing t
 Inject destination routes into the module:
 
 ```swift
-public struct DiscoverModule<Schedule: Route>: RouteModule {
+public struct DiscoverModule<Schedule: Route>: NavigationModule {
     let scheduleRoute: Schedule
     public func register(in registry: RouteRegistry) {
-        registry.register { (route: DiscoverRoute, nav) in
-            DiscoverScreen(openSchedule: { nav.push(scheduleRoute) })
+        registry.register { (route: DiscoverRoute, navigator) in
+            DiscoverScreen(openSchedule: { navigator.push(scheduleRoute) })
         }
     }
 }
@@ -142,11 +150,11 @@ public struct DiscoverModule<Schedule: Route>: RouteModule {
 Depend on `NavigationKitInterface` and take a `Navigator`:
 
 ```swift
-@Observable final class CheckoutModel {
-    let nav: any Navigator
+@Observable final class PaymentModel {
+    let navigator: FlowNavigator<Checkout>       // also SwiftUI-free
     func pay() async {
-        guard await nav.confirm("Pay \(total)?") else { return }
-        nav.finishFlow(returning: try? await api.pay())
+        guard await navigator.confirm("Pay \(total)?") else { return }
+        if let order = try? await api.pay() { navigator.finish(order) }
     }
 }
 ```

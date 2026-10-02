@@ -14,7 +14,7 @@ NavigationRoot(selection: AppTab.discover) {
 .layout(.adaptive)
 .routes(DiscoverModule(), ScheduleModule())
 .deepLinks(AppLinks.self)
-.restoration(.sceneStorage("nav"))
+.restoration(.sceneStorage("navigator"))
 ```
 
 ## Topics
@@ -28,17 +28,19 @@ NavigationRoot(selection: AppTab.discover) {
 
 ### Routes and screens
 
-- ``TypedRouteModule``
 - ``RouteModule``
+- ``FlowModule``
+- ``NavigationModule``
+- ``WithDependency``
 - ``RouteRegistry``
 - ``RouteLink``
 
 ### Navigating
 
 Screens navigate through `Navigator` (and its typed form `RouteNavigator`), presenting with a
-`PresentationStyle`, asking with a `Dialog`, describing paths as `Step`s and composing processes as
-`Flow`s. These types live in
-`NavigationKitInterface`, which `NavigationKit` re-exports.
+`PresentationStyle`, asking with a `Dialog`, and describing paths as `Step`s. Multi-step processes
+are `Flow`s, whose steps get a `FlowNavigator`. These types live in `NavigationKitInterface`, which
+`NavigationKit` re-exports.
 
 ### State
 

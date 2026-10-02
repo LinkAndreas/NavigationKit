@@ -7,19 +7,22 @@ struct Entry: Hashable, Identifiable {
     let id = UUID()
     let route: AnyRoute
 
-    /// A ``Flow`` is shown as its start step.
+    /// A ``Flow`` pushed as a plain route (a deep link, `navigate`, `push`) is shown as its first
+    /// step, in a run of its own.
     init(route: AnyRoute) {
         self.route = route.startingFlow
     }
 }
 
 extension AnyRoute {
-    /// The route that appears on screen for this one: a flow's start step (recursively, since a
-    /// flow may start with another flow), otherwise the route itself.
+    /// The route that appears on screen for this one: a flow's first step, otherwise itself.
     var startingFlow: AnyRoute {
         guard let flow = base as? any Flow else { return self }
-        return AnyRoute(flow.start).startingFlow
+        return flow.firstStepRoute(run: UUID())
     }
+
+    /// The flow run this route is a step of, if any.
+    var flowStep: (any AnyFlowStepRoute)? { base as? any AnyFlowStepRoute }
 }
 
 /// A one-shot signal that can be awaited. Waiting never hangs forever: after `timeout` the
@@ -74,18 +77,19 @@ final class Memory {
     }
 }
 
-/// A pushed flow waiting for `finishFlow`.
+/// A pushed flow run whose caller waits for its result.
 @MainActor
 final class FlowMarker {
     let startIndex: Int
+    /// The flow value it was started with.
     let route: AnyRoute
-    /// What the flow's screens remember for `.flow`; released with the marker.
-    let memory = Memory()
+    let run: UUID
     private var continuation: CheckedContinuation<(any Sendable)?, Never>?
 
-    init(startIndex: Int, route: AnyRoute, continuation: CheckedContinuation<(any Sendable)?, Never>) {
+    init(startIndex: Int, route: AnyRoute, run: UUID, continuation: CheckedContinuation<(any Sendable)?, Never>) {
         self.startIndex = startIndex
         self.route = route
+        self.run = run
         self.continuation = continuation
     }
 
@@ -170,6 +174,7 @@ final class StackNode: Identifiable {
         }
 
         path = newPath
+        if !removed.isEmpty { store?.releaseEndedFlowRuns() }
 
         guard emit else { return }
         if !removed.isEmpty { store?.emit(.popped(removed.map(\.route))) }
@@ -212,23 +217,19 @@ final class ModalNode: Identifiable {
     let id = UUID()
     let style: PresentationStyle
     let stack: StackNode
-    let isFlow: Bool
-    /// The route the flow was started with (a `Flow` value or its first route), when `isFlow`.
-    let flowRoute: AnyRoute?
-    /// What the flow's screens remember for `.flow`, when `isFlow`; released with the modal.
-    @ObservationIgnored let memory = Memory()
+    /// The flow run this modal presents, when a flow was started in it.
+    let flowRun: UUID?
 
     @ObservationIgnored weak var presenter: StackNode?
     @ObservationIgnored private var continuation: CheckedContinuation<(any Sendable)?, Never>?
     let appeared = Signal()
     let disappeared = Signal()
 
-    init(style: PresentationStyle, stack: StackNode, presenter: StackNode, isFlow: Bool, flowRoute: AnyRoute? = nil) {
+    init(style: PresentationStyle, stack: StackNode, presenter: StackNode, flowRun: UUID? = nil) {
         self.style = style
         self.stack = stack
         self.presenter = presenter
-        self.isFlow = isFlow
-        self.flowRoute = isFlow ? flowRoute : nil
+        self.flowRun = flowRun
         stack.presentingModal = self
     }
 

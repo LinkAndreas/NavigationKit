@@ -15,7 +15,7 @@ A deep link resolves to a list of `Step`s — a path that doesn't depend on the 
 | `.show(route)` | Detail column in a split layout, push otherwise |
 | `.present(route, as: style)` | Present; later steps apply inside the modal |
 
-The same steps drive `nav.navigate(_:)`, restoration and test assertions (`store.currentSteps`).
+The same steps drive `navigator.navigate(_:)`, restoration and test assertions (`store.currentSteps`).
 
 ## Handling URLs
 
@@ -38,7 +38,7 @@ enum AppLinks: DeepLinks {
 NavigationRoot { … }.deepLinks(AppLinks.self)       // or .deepLinks { url in … }
 ```
 
-`NavigationRoot` installs `onOpenURL`. Screens can open links too: `nav.open(url)` returns `false` if nothing matched. Unmatched links emit `.deepLinkFailed`.
+`NavigationRoot` installs `onOpenURL`. Screens can open links too: `navigator.open(url)` returns `false` if nothing matched. Unmatched links emit `.deepLinkFailed`.
 
 A good split: each feature parses its own segments into root-relative routes; the app decides where they're mounted.
 
