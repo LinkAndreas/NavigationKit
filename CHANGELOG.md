@@ -11,6 +11,8 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-02
+
 ### Added
 
 - `Navigator.remember(for:_:)`: keeps a value for a lifetime — `.screen`, `.flow`,
@@ -359,7 +361,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.4.0...v3.0.0
 [2.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.2.0...v2.3.0
