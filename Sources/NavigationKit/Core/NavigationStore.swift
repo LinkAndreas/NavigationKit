@@ -502,19 +502,19 @@ extension NavigationStore {
 
     // MARK: Remember
 
-    /// The value `entryID` on `stack` remembers for `lifetime`. A screen that already left its
-    /// stack (e.g. re-rendering while it animates out) gets a fresh, unkept value.
-    func remember<Value>(_ lifetime: Lifetime, entry entryID: Entry.ID, on stack: StackNode, make: () -> Value) -> Value {
-        if case .window = lifetime.kind { return windowMemory.value(make) }
-        guard let index = stack.index(of: entryID) else { return make() }
+    /// Where `entryID` on `stack` keeps its values for `lifetime`, or `nil` if the screen already
+    /// left its stack.
+    func memory(for lifetime: Lifetime, entry entryID: Entry.ID, on stack: StackNode) -> Memory? {
+        if case .window = lifetime.kind { return windowMemory }
+        guard let index = stack.index(of: entryID) else { return nil }
         if case let .flow(routeKey) = lifetime.kind,
            let memory = flowMemory(matching: routeKey, from: stack, at: index) {
-            return memory.value(make)
+            return memory
         }
         // `.screen`, and `.flow` outside a flow.
         let memory = stack.memories[entryID] ?? Memory()
         stack.memories[entryID] = memory
-        return memory.value(make)
+        return memory
     }
 
     /// The memory of the innermost flow run containing the screen at `index` on `stack` —
@@ -577,15 +577,24 @@ extension NavigationStore {
 final class ScopedNavigator: Navigator {
     weak var stack: StackNode?
     let entryID: Entry.ID
+    /// What this screen was handed so far, kept for as long as its view exists.
+    let kept: ScreenMemories
 
-    init(stack: StackNode, entryID: Entry.ID) {
+    init(stack: StackNode, entryID: Entry.ID, kept: ScreenMemories = ScreenMemories()) {
         self.stack = stack
         self.entryID = entryID
+        self.kept = kept
     }
 
     func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
-        guard let stack, let store = stack.store else { return make() }
-        return store.remember(lifetime, entry: entryID, on: stack, make: make)
+        if let stack, let store = stack.store,
+           let memory = store.memory(for: lifetime, entry: entryID, on: stack) {
+            kept.byLifetime[lifetime] = memory
+            return memory.value(make)
+        }
+        // The screen left its stack but still renders (e.g. animating out): same values as before.
+        if let memory = kept.byLifetime[lifetime] { return memory.value(make) }
+        return make()
     }
 
     @discardableResult
@@ -618,7 +627,8 @@ final class ActiveNavigator: Navigator {
     func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
         guard let store else { return make() }
         let stack = store.activeStack
-        return store.remember(lifetime, entry: stack.entries[stack.entries.count - 1].id, on: stack, make: make)
+        let memory = store.memory(for: lifetime, entry: stack.entries[stack.entries.count - 1].id, on: stack)
+        return memory?.value(make) ?? make()
     }
 
     @discardableResult

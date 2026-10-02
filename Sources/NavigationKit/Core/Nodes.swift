@@ -51,6 +51,14 @@ final class Signal {
 
 typealias GuardHandler = @MainActor () async -> Bool
 
+/// The memories one rendered screen was handed, per lifetime. Owned by the screen's view, so a
+/// screen that already left its stack — and still renders while it animates out — keeps getting
+/// the same values until SwiftUI removes it.
+@MainActor
+final class ScreenMemories {
+    var byLifetime: [Lifetime: Memory] = [:]
+}
+
 /// Values kept by `Navigator.remember(for:_:)` for one lifetime, one per type. Released with
 /// whatever owns it: a screen's entry, a flow run, or the store.
 @MainActor

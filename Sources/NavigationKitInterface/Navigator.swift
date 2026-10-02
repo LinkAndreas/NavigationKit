@@ -36,7 +36,12 @@ public protocol Navigator: Sendable {
     /// - When the lifetime ends, the value is released; the next run starts fresh.
     ///
     /// Values are told apart by type: to keep two values of the same type, wrap them in distinct
-    /// types. See ``Lifetime`` for when each lifetime ends.
+    /// types. The type is the one `make` returns as the compiler infers it — when it can't infer
+    /// it from the closure (e.g. one with several statements), annotate it:
+    /// `let api: CheckoutAPI = nav.remember(for: .window) { … }`.
+    ///
+    /// A screen that leaves its stack keeps its values while it animates out; they're released
+    /// once its view is gone. See ``Lifetime`` for when each lifetime ends.
     @MainActor
     func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value
 }

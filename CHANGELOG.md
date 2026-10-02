@@ -11,6 +11,14 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-10-02
+
+### Fixed
+
+- `remember(for:)` created a throwaway value when a screen rendered again after leaving its stack —
+  while animating out after a pop, a finished flow, or a replaced detail column — so `init`/`deinit`
+  ran more than once per lifetime. A leaving screen now keeps its values until its view is gone.
+
 ## [3.1.0] - 2026-10-02
 
 ### Added
@@ -361,7 +369,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...HEAD
+[3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.4.0...v3.0.0
 [2.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.3.0...v2.4.0
