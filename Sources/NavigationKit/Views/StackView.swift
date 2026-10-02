@@ -34,9 +34,11 @@ struct ScreenView: View {
     let entry: Entry
     let stack: StackNode
     @Environment(\.routeRegistry) private var registry
+    /// Lives exactly as long as this screen's view, including while it animates out.
+    @State private var kept = ScreenMemories()
 
     var body: some View {
-        let navigator = ScopedNavigator(stack: stack, entryID: entry.id)
+        let navigator = ScopedNavigator(stack: stack, entryID: entry.id, kept: kept)
         RouteRegistry.resolve(entry.route, navigator: navigator, registry: registry)
             .environment(\.navigator, navigator)
             .environment(\.screenContext, ScreenContext(stack: stack, entryID: entry.id, isRoot: entry.id == stack.rootEntry.id))
