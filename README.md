@@ -83,7 +83,7 @@ Add `NavigationKit` to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "4.0.0")
+    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "4.1.0")
 ]
 ```
 
@@ -226,6 +226,7 @@ NavigationRoot(selection: AppTab.home) {
 .navigationDebugger()         // NavigationKitDebug
 ```
 
+- A flow as a tab: `RootSection(AppTab.order, "Order", icon: "cart", flow: Checkout()) { order in … }` — finishing starts it over
 - Single stack: `NavigationRoot(HomeRoute.feed)`
 - A store you own (navigate from outside the views, or in tests): `NavigationRoot(store: store)`
 - Your own sidebar: `NavigationRoot(selection: Tab.a) { … } sidebar: { selection in MySidebar(selection: selection) }`

@@ -506,12 +506,18 @@ extension NavigationStore {
         }
         guard let first = stack.entries.firstIndex(where: { $0.route.flowStep?.run == run }) else { return false }
         emit(.flowFinished(step.flowRoute))
-        if first == 0 {
-            // The run starts at the stack's root: it fills a modal.
-            guard let modal = stack.presentingModal else { return false }
+        if first > 0 {
+            stack.setPath(Array(stack.path.prefix(first - 1)))
+        } else if let modal = stack.presentingModal {
+            // The run fills a modal.
             closeModal(modal, result: modal.flowRun == run ? result : nil)
         } else {
-            stack.setPath(Array(stack.path.prefix(first - 1)))
+            // The flow is the root of a tab, a detail column or the whole root: start it over.
+            stack.reset(root: step.flowRoute)
+            releaseEndedFlowRuns()
+            if let result, let section = stack.section, section.main === stack {
+                section.onFlowFinish?(result)
+            }
         }
         return true
     }

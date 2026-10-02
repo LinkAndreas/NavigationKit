@@ -11,6 +11,15 @@ import Foundation
 /// }
 /// ```
 ///
+/// A section can host a ``Flow``: its steps are the tab's screens, and finishing or cancelling it
+/// starts it over in a fresh run — a "New order" tab is ready for the next order:
+///
+/// ```swift
+/// RootSection(AppTab.order, "Order", icon: "cart", flow: Checkout()) { order in
+///     receipts.add(order)
+/// }
+/// ```
+///
 /// Roots are `any Route`, so sections can come from data whose tabs use different route types:
 ///
 /// ```swift
@@ -24,6 +33,8 @@ public struct RootSection {
     let icon: String?
     let root: AnyRoute
     let detail: AnyRoute?
+    /// Called with the result when a flow at the section's root finishes.
+    let onFlowFinish: (@MainActor (any Sendable) -> Void)?
 
     public init<ID: Hashable & Sendable>(
         _ id: ID,
@@ -44,12 +55,38 @@ public struct RootSection {
         self.init(id: AnySectionID(id), title: title, icon: icon, root: AnyRoute(root()), detail: AnyRoute(detail()))
     }
 
-    init(id: AnySectionID, title: LocalizedStringResource, icon: String?, root: AnyRoute, detail: AnyRoute?) {
+    /// A section that hosts `flow`. When the flow finishes, `onFinish` gets its result and the
+    /// flow starts over; cancelling it starts it over without calling `onFinish`.
+    public init<ID: Hashable & Sendable, F: Flow>(
+        _ id: ID,
+        _ title: LocalizedStringResource,
+        icon: String? = nil,
+        flow: F,
+        onFinish: (@MainActor (F.Result) -> Void)? = nil
+    ) {
+        var handler: (@MainActor (any Sendable) -> Void)?
+        if let onFinish {
+            handler = { value in
+                if let result = value as? F.Result { onFinish(result) }
+            }
+        }
+        self.init(id: AnySectionID(id), title: title, icon: icon, root: AnyRoute(flow), detail: nil, onFlowFinish: handler)
+    }
+
+    init(
+        id: AnySectionID,
+        title: LocalizedStringResource,
+        icon: String?,
+        root: AnyRoute,
+        detail: AnyRoute?,
+        onFlowFinish: (@MainActor (any Sendable) -> Void)? = nil
+    ) {
         self.id = id
         self.title = title
         self.icon = icon
         self.root = root
         self.detail = detail
+        self.onFlowFinish = onFlowFinish
     }
 }
 

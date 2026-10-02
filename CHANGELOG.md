@@ -11,6 +11,21 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-02
+
+### Added
+
+- A flow can be the content of a tab: `RootSection(id, title, icon:, flow: Checkout()) { order in … }`.
+  Finishing or cancelling a flow at the root of a tab, a detail column or the whole root starts it
+  over in a fresh run (with fresh `.flow` dependencies); `onFinish` gets the result.
+
+### Fixed
+
+- A running flow at the root of a tab is restored with its progress.
+- A flow as a split view's default detail no longer counts as a customized detail.
+- The placeholder for an unregistered screen names the module to add: a `FlowModule` for a flow's
+  steps, a `RouteModule` for a route.
+
 ## [4.0.0] - 2026-10-02
 
 ### Added
@@ -405,7 +420,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1

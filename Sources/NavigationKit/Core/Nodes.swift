@@ -23,6 +23,17 @@ extension AnyRoute {
 
     /// The flow run this route is a step of, if any.
     var flowStep: (any AnyFlowStepRoute)? { base as? any AnyFlowStepRoute }
+
+    /// Whether this route shows the same screen as `defined` — a section root from code. A flow
+    /// defined as a root is on screen as its first step, in whichever run.
+    func isShown(as defined: AnyRoute) -> Bool {
+        if self == defined { return true }
+        guard let step = flowStep else { return false }
+        if let other = defined.flowStep {
+            return step.flowRoute == other.flowRoute && step.stepRoute == other.stepRoute
+        }
+        return step.flowRoute == defined && step.isFirstStep
+    }
 }
 
 /// A one-shot signal that can be awaited. Waiting never hangs forever: after `timeout` the
@@ -263,6 +274,8 @@ final class SectionNode: Identifiable {
     let main: StackNode
     let detail: StackNode?
     let defaultDetail: AnyRoute?
+    /// Gets the result when a flow at the root of `main` finishes.
+    let onFlowFinish: (@MainActor (any Sendable) -> Void)?
 
     init(_ definition: RootSection, store: NavigationStore) {
         id = definition.id
@@ -271,6 +284,7 @@ final class SectionNode: Identifiable {
         main = StackNode(root: definition.root, store: store)
         detail = definition.detail.map { StackNode(root: $0, store: store) }
         defaultDetail = definition.detail
+        onFlowFinish = definition.onFlowFinish
         main.section = self
         detail?.section = self
     }
@@ -278,7 +292,8 @@ final class SectionNode: Identifiable {
     /// Whether the detail column shows something other than its placeholder.
     var detailIsCustomized: Bool {
         guard let detail else { return false }
-        return detail.rootEntry.route != defaultDetail || !detail.path.isEmpty
+        guard let defaultDetail else { return true }
+        return !detail.rootEntry.route.isShown(as: defaultDetail) || !detail.path.isEmpty
     }
 
     func resetToRoot() {

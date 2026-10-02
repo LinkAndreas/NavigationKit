@@ -151,11 +151,16 @@ package protocol AnyFlowStepRoute {
     var run: UUID { get }
     var flowRouteKey: String { get }
     var flowRoute: AnyRoute { get }
+    /// The step, comparable across runs.
+    var stepRoute: AnyHashable { get }
+    var isFirstStep: Bool { get }
 }
 
 extension FlowStepRoute: AnyFlowStepRoute {
     package var flowRouteKey: String { F.routeKey }
     package var flowRoute: AnyRoute { AnyRoute(flow) }
+    package var stepRoute: AnyHashable { AnyHashable(step) }
+    package var isFirstStep: Bool { step == flow.start }
 }
 
 package extension Flow {

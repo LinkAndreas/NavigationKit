@@ -167,10 +167,18 @@ struct UnregisteredRouteView: View {
 
     var body: some View {
         ContentUnavailableView(
-            "Unregistered route",
+            route.flowStep == nil ? "Unregistered route" : "Unregistered flow",
             systemImage: "exclamationmark.triangle",
-            description: Text("\(route.description)\nRegister it in a NavigationModule and add the module with .routes(…).")
+            description: Text(hint)
         )
         .foregroundStyle(.red)
+    }
+
+    private var hint: String {
+        if let step = route.flowStep {
+            let flow = String(describing: type(of: step.flowRoute.base))
+            return "\(route.description)\nAdd a FlowModule for \(flow) with .routes(…)."
+        }
+        return "\(route.description)\nAdd a RouteModule for it with .routes(…)."
     }
 }
