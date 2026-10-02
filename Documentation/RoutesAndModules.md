@@ -12,54 +12,11 @@ enum SpeakersRoute: Route {
 
 Optional traits: `presentation`, `requiresAuth`, `hidesTabBar`.
 
-## Routes that render themselves
-
-When a feature owns its routes and screens, conform to `ViewRoute`:
-
-```swift
-extension SpeakersRoute: ViewRoute {
-    func body(_ nav: RouteNavigator<Self>) -> some View {
-        switch self {
-        case .overview: SpeakerList(onSelect: { nav.push(.detail(id: $0)) })
-        case let .detail(id): SpeakerDetail(id: id)
-        }
-    }
-}
-```
-
-`RouteNavigator<Self>` is a navigator that knows your route type, which enables leading-dot syntax. Other features' routes still work: `nav.push(ScheduleRoute.list)`.
+Routes never contain views. That keeps them in `NavigationKitInterface` territory: a route enum can live in a lightweight *contracts* package that other features import to navigate to it, without depending on its screens.
 
 ## Modules
 
-Use a `RouteModule` when the route can't render itself:
-
-- the route lives in a lightweight *contracts* package so other features can navigate to it without depending on its implementation, or
-- its screens need dependencies the app provides.
-
-```swift
-public struct ScheduleModule: RouteModule {
-    let avatars: AvatarProvider
-
-    public var routeTypes: [any Route.Type] { [ScheduleRoute.self] }   // decodable before first use
-
-    public func register(in registry: RouteRegistry) {
-        registry.register { (route: ScheduleRoute, nav) in
-            switch route {
-            case .list: ScheduleView(onSelect: { nav.show(.session(id: $0)) })
-            case let .session(id): SessionView(id: id, avatars: avatars)
-            }
-        }
-    }
-}
-
-NavigationRoot { … }.routes(ScheduleModule(avatars: avatars), DiscoverModule())
-```
-
-Resolution order for every screen: a registered builder, then `ViewRoute.body`, then a visible "unregistered route" placeholder. Because the registry wins, the app can override a feature's screen.
-
-### Typed modules
-
-When a module covers one route type, conform to `TypedRouteModule` instead. Its screens are an exhaustive `switch`, so a new case without a screen is a compile error, and `register(in:)` and `routeTypes` come for free:
+Screens come from modules. When a module covers one route type, conform to `TypedRouteModule`. Its screens are an exhaustive `switch`, so a new case without a screen is a compile error, and `register(in:)` and `routeTypes` come for free:
 
 ```swift
 public struct ScheduleModule: TypedRouteModule {
@@ -72,11 +29,33 @@ public struct ScheduleModule: TypedRouteModule {
         }
     }
 }
+
+NavigationRoot { … }.routes(ScheduleModule(avatars: avatars), DiscoverModule())
 ```
+
+`RouteNavigator<ScheduleRoute>` is a navigator that knows your route type, which enables leading-dot syntax. Other features' routes still work: `nav.push(SpeakersRoute.list)`.
+
+Call `.routes(…)` as often as you like — `.routes(CartModule()).routes(ProductModule())` equals `.routes(CartModule(), ProductModule())`.
+
+### Several route types in one module
+
+Conform to `RouteModule` and register each type, or add other modules — handy for a feature that ships one module for all its screens and flows:
+
+```swift
+public struct MyConfModule: RouteModule {
+    public func register(in registry: RouteRegistry) {
+        registry.add(MyConfScreens())                 // TypedRouteModules
+        registry.add(CheckoutScreens())
+        registry.register { (route: LegacyRoute, nav) in LegacyScreen(route) }
+    }
+}
+```
+
+A route without a registered screen shows a visible "unregistered route" placeholder. Registering a type again replaces its screens, so the app can override a feature's screen by listing its own module last.
 
 ### Checking that every route has a screen
 
-The compiler can't see across modules whether every route you navigate to has a screen, so make it a test. `missingViews(for:)` lists the route types that are neither registered nor `ViewRoute`s:
+The compiler can't see across modules whether every route you navigate to has a screen, so make it a test. `missingViews(for:)` lists the route types without a registered screen (a `Flow` counts as covered — list its step type):
 
 ```swift
 @Test @MainActor func everyRouteHasAScreen() {
@@ -133,6 +112,6 @@ List(speakers) { speaker in
 ## Previews
 
 ```swift
-#Preview { SpeakersRoute.detail(id: "s1").preview() }
+#Preview { SpeakersRoute.detail(id: "s1").preview(using: SpeakersModule()) }
 #Preview { ScheduleRoute.list.preview(using: ScheduleModule.mock) }
 ```

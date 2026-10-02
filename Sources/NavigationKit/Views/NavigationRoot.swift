@@ -161,7 +161,8 @@ public struct NavigationRoot: View {
         return copy
     }
 
-    /// Feature modules that map routes to views (only needed for routes that aren't ``ViewRoute``s).
+    /// Feature modules that map routes to views. Call it as often as you like; the modules add up:
+    /// `.routes(CartModule()).routes(ProductModule())` equals `.routes(CartModule(), ProductModule())`.
     public func routes(_ modules: any RouteModule...) -> NavigationRoot {
         var copy = self
         copy.modules += modules

@@ -88,7 +88,7 @@ public extension Navigator {
     }
 
     /// Starts a flow that produces no value. Returns `true` if it finished, `false` if abandoned.
-    @discardableResult
+    @discardableResult @_disfavoredOverload
     func flow<R: Route>(_ route: R, as style: PresentationStyle? = nil) async -> Bool {
         await result(of: .flow(AnyRoute(route), style)) != nil
     }
@@ -201,6 +201,7 @@ public extension Navigator {
 
     /// Starts a flow that produces no value and calls `onFinish` with `true` if it finished,
     /// `false` if it was abandoned.
+    @_disfavoredOverload
     func flow<R: Route>(
         _ route: R,
         as style: PresentationStyle? = nil,

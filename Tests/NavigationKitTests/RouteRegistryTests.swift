@@ -2,12 +2,6 @@ import SwiftUI
 import Testing
 @testable import NavigationKit
 
-private enum SelfRenderingRoute: ViewRoute {
-    case only
-
-    func body(_ nav: RouteNavigator<Self>) -> some View { Text("Self-rendering") }
-}
-
 private struct ScheduleScreens: TypedRouteModule {
     func body(for route: ScheduleRoute, nav: RouteNavigator<ScheduleRoute>) -> some View {
         switch route {
@@ -30,7 +24,7 @@ struct RouteRegistryTests {
     @Test func missingViewsReportsRoutesWithoutAScreen() {
         let registry = RouteRegistry([ScheduleScreens()])
 
-        let missing = registry.missingViews(for: [ScheduleRoute.self, SelfRenderingRoute.self, HomeRoute.self])
+        let missing = registry.missingViews(for: [ScheduleRoute.self, HomeRoute.self])
 
         #expect(missing == [HomeRoute.routeKey])
     }

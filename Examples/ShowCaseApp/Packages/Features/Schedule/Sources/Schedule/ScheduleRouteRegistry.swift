@@ -1,8 +1,8 @@
 import NavigationKit
 import SwiftUI
 
-/// Schedule screens need a dependency from the app (speaker avatars), so this feature
-/// contributes a module instead of conforming its route to `ViewRoute`.
+/// Schedule screens need a dependency from the app (speaker avatars), which the app passes in
+/// when it lists the module.
 public struct ScheduleModule: TypedRouteModule {
     private let speakerAvatarProvider: ((String) -> Image?)?
 
