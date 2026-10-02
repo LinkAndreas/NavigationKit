@@ -11,6 +11,12 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+### Fixed
+
+- `remember(for:)` created a throwaway value when a screen rendered again after leaving its stack —
+  while animating out after a pop, a finished flow, or a replaced detail column — so `init`/`deinit`
+  ran more than once per lifetime. A leaving screen now keeps its values until its view is gone.
+
 ## [3.1.0] - 2026-10-02
 
 ### Added

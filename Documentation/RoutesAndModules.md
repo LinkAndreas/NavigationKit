@@ -86,7 +86,9 @@ The rules:
 | `.flow(Checkout.self)` | like `.flow`, for that enclosing flow — also from inside a nested one | when that flow's run ends |
 | `.window` | when the first screen asks | when the `NavigationRoot` goes away (normally one per window) |
 
-Outside a flow, `.flow` means the screen. Values are told apart by type: to keep two values of the same type, wrap them in distinct types.
+Outside a flow, `.flow` means the screen. Values are told apart by type: to keep two values of the same type, wrap them in distinct types. If the compiler can't infer the type from the closure — for example one with several statements — annotate it: `let api: CheckoutAPI = nav.remember(for: .window) { … }`.
+
+A screen that leaves its stack keeps its values while it animates out; they're released once, when its view is gone.
 
 Rewiring is one word: `.screen`, `.flow` or `.window`. For a dependency that only part of a flow needs, make that part its own `Flow` — `.flow` inside it then means just that part.
 

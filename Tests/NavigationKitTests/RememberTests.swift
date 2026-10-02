@@ -133,15 +133,28 @@ struct RememberTests {
         #expect(nav.remember(for: .screen) { Cache() } === cache)
     }
 
-    @Test func aScreenThatLeftItsStackKeepsNothing() {
+    @Test func aScreenAnimatingOutKeepsItsValuesUntilItsViewGoesAway() {
         let store = NavigationStore(root: HomeRoute.feed)
         store.navigator.push(HomeRoute.profile(id: "1"))
         let stack = store.sections[0].main
-        let screen = ScopedNavigator(stack: stack, entryID: stack.path[0].id)
-        store.navigator.pop()
+        var created = 0
+        weak var released: Session?
 
-        // e.g. re-rendering while it animates out: nothing is kept for an ended lifetime
-        #expect(screen.remember(for: .screen) { Session() } !== screen.remember(for: .screen) { Session() })
+        do {
+            let kept = ScreenMemories()                       // owned by the screen's view
+            let render = { ScopedNavigator(stack: stack, entryID: stack.path.last!.id, kept: kept) }
+            let screen = render()
+            let session = screen.remember(for: .screen) { created += 1; return Session() }
+            released = session
+            store.navigator.pop()
+
+            // Re-rendered while animating out: still the same value, nothing new is created.
+            let again: Session = screen.remember(for: .screen) { created += 1; return Session() }
+            #expect(again === session)
+            #expect(created == 1)
+        }
+
+        #expect(released == nil)                              // the view went away: released once
     }
 
     @Test func recordingNavigatorRemembersUntilTheLifetimeEnds() {
