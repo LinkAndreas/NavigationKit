@@ -83,7 +83,7 @@ Add `NavigationKit` to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "3.1.1")
+    .package(url: "https://github.com/linkandreas/NavigationKit.git", from: "3.2.0")
 ]
 ```
 
@@ -270,6 +270,17 @@ Created the first time it's asked for, the same value on every later ask, releas
 lifetime ends: `.screen` (popped or dismissed), `.flow` (finished, cancelled or backed out of),
 `.flow(Checkout.self)` (that enclosing flow), `.window` (the `NavigationRoot`). Values are told
 apart by type. Screens keep plain initializers.
+
+The same as a view, where wrappers nest to show the composition:
+
+```swift
+case .review:
+    Remember(for: .window) { CheckoutAPI() } content: { api in
+        Remember(for: .flow) { CheckoutSession(api: api) } content: { session in
+            ReviewScreen(session: session, onNext: { nav.push(.payment) })
+        }
+    }
+```
 
 ### Navigating
 
