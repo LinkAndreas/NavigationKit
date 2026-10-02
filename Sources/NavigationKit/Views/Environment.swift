@@ -8,8 +8,8 @@ struct ScreenContext {
 }
 
 public extension EnvironmentValues {
-    /// The navigator scoped to the current screen. Prefer receiving it explicitly (through
-    /// `ViewRoute.body(_:)` or a registry closure); the environment is handy deep in a view tree.
+    /// The navigator scoped to the current screen. Prefer receiving it explicitly (through a
+    /// module's `body(for:nav:)`); the environment is handy deep in a view tree.
     @Entry var navigator: any Navigator = UnavailableNavigator()
 
     /// The store of the enclosing ``NavigationRoot``.

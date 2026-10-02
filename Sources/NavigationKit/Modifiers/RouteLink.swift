@@ -75,14 +75,6 @@ public struct RouteWindows: Scene {
     }
 }
 
-public extension ViewRoute {
-    /// A screen in a working navigation context, for `#Preview`:
-    /// `#Preview { SpeakersRoute.detail(id: "s1").preview() }`.
-    @MainActor func preview() -> some View {
-        NavigationRoot(self)
-    }
-}
-
 public extension Route {
     /// A screen in a working navigation context, for `#Preview`, using `modules` to resolve views.
     @MainActor func preview(using modules: any RouteModule...) -> some View {

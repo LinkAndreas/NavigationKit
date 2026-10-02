@@ -41,3 +41,31 @@ func makeStore(layout: NavigationLayout = .tabs) -> NavigationStore {
 func settle() async {
     for _ in 0..<20 { await Task.yield() }
 }
+
+/// A flow without a result, starting at `FlowRoute.step1`.
+struct OnboardingFlow: Flow {
+    var start: FlowRoute { .step1 }
+}
+
+enum ProofStep: Route {
+    case upload(required: Bool), link
+}
+
+/// A reusable flow from "another team", producing a proof string.
+struct ProofFlow: Flow {
+    typealias Result = String
+    var required = true
+    var start: ProofStep { .upload(required: required) }
+}
+
+enum RegistrationStep: Route {
+    case team, summary(proof: String)
+
+    var presentation: PresentationStyle? { self == .team ? .sheet : nil }
+}
+
+/// A flow that composes `ProofFlow`; its start step is a sheet, so the flow runs in one.
+struct RegistrationFlow: Flow {
+    typealias Result = Int
+    var start: RegistrationStep { .team }
+}
