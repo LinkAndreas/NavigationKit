@@ -139,7 +139,10 @@ extension NavigationStore {
         // except for detail columns whose root is user-driven.
         if stack.section?.detail === stack {
             stack.reset(root: saved.root)
-        } else if stack.rootEntry.route != saved.root {
+        } else if saved.root.isShown(as: stack.rootEntry.route) {
+            // A flow root keeps the saved run, so its saved steps still belong to it.
+            if saved.root != stack.rootEntry.route { stack.reset(root: saved.root) }
+        } else {
             return
         }
         stack.setPath(saved.path.map { Entry(route: $0) }, emit: false)
