@@ -18,6 +18,16 @@ import NavigationKitTesting
 
 Script async answers: `nav.results[AnyRoute(PickerRoute.color)] = Color.red` for `present(_:returning:)` and `flow`, and `nav.dialogResponse` for any dialog.
 
+`remember(for:)` keeps values per lifetime until you end it:
+
+```swift
+let first = nav.remember(for: .flow) { CheckoutSession() }
+#expect(nav.remember(for: .flow) { CheckoutSession() } === first)
+
+nav.end(.flow)                                           // as if the run had finished
+#expect(nav.remember(for: .flow) { CheckoutSession() } !== first)
+```
+
 ## Navigation behavior: a headless store
 
 `NavigationStore` runs without views. Drive it with its navigator and assert where the user ended up:

@@ -9,6 +9,7 @@ import Foundation
 ///
 /// The protocol has three requirements; everything else is convenience built on top, which
 /// also makes test doubles trivial (see `RecordingNavigator` in `NavigationKitTesting`).
+/// ``remember(for:_:)`` has a default implementation that doesn't keep anything.
 public protocol Navigator: Sendable {
     /// Performs a fire-and-forget action. Returns `false` if nothing in the tree could handle it.
     @MainActor @discardableResult
@@ -22,6 +23,28 @@ public protocol Navigator: Sendable {
     /// Shows a dialog and returns the ``Dialog/Action/id`` the user chose, or `nil` if dismissed.
     @MainActor
     func dialog(_ dialog: Dialog) async -> Dialog.Action.ID?
+
+    /// Returns the value remembered for `lifetime`, creating it with `make` the first time.
+    ///
+    /// ```swift
+    /// let api     = nav.remember(for: .window) { CheckoutAPI() }
+    /// let session = nav.remember(for: .flow)   { CheckoutSession(api: api) }
+    /// ```
+    ///
+    /// - The value is created only when first asked for, never up front.
+    /// - Within one lifetime, every call for the same type returns the same value.
+    /// - When the lifetime ends, the value is released; the next run starts fresh.
+    ///
+    /// Values are told apart by type: to keep two values of the same type, wrap them in distinct
+    /// types. See ``Lifetime`` for when each lifetime ends.
+    @MainActor
+    func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value
+}
+
+public extension Navigator {
+    /// Keeps nothing: calls `make` every time. Navigators backed by a `NavigationStore` remember.
+    @MainActor
+    func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value { make() }
 }
 
 @MainActor
@@ -287,6 +310,11 @@ public struct RouteNavigator<R: Route>: Navigator {
 
     @MainActor
     public func dialog(_ dialog: Dialog) async -> Dialog.Action.ID? { await base.dialog(dialog) }
+
+    @MainActor
+    public func remember<Value>(for lifetime: Lifetime, _ make: () -> Value) -> Value {
+        base.remember(for: lifetime, make)
+    }
 
     /// Re-types this navigator for another feature's routes.
     public func typed<Other: Route>(_: Other.Type = Other.self) -> RouteNavigator<Other> { RouteNavigator<Other>(base) }
