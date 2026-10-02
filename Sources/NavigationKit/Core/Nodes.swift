@@ -6,6 +6,20 @@ import Observation
 struct Entry: Hashable, Identifiable {
     let id = UUID()
     let route: AnyRoute
+
+    /// A ``Flow`` is shown as its start step.
+    init(route: AnyRoute) {
+        self.route = route.startingFlow
+    }
+}
+
+extension AnyRoute {
+    /// The route that appears on screen for this one: a flow's start step (recursively, since a
+    /// flow may start with another flow), otherwise the route itself.
+    var startingFlow: AnyRoute {
+        guard let flow = base as? any Flow else { return self }
+        return AnyRoute(flow.start).startingFlow
+    }
 }
 
 /// A one-shot signal that can be awaited. Waiting never hangs forever: after `timeout` the

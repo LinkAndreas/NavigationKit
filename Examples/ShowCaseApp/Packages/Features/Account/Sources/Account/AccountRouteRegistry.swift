@@ -1,11 +1,11 @@
 import NavigationKit
 import SwiftUI
 
-/// The feature owns both its routes and its screens, so the route renders itself — no
-/// registration needed anywhere.
-extension AccountRoute: ViewRoute {
-    public func body(_ nav: RouteNavigator<AccountRoute>) -> some View {
-        switch self {
+public struct AccountModule: TypedRouteModule {
+    public init() {}
+
+    public func body(for route: AccountRoute, nav: RouteNavigator<AccountRoute>) -> some View {
+        switch route {
         case .profile:
             ProfileScreen(
                 onPersonalInformationTapped: { nav.push(.personalInformation) },

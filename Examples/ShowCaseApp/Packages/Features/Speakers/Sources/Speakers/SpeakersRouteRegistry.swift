@@ -1,9 +1,11 @@
 import NavigationKit
 import SwiftUI
 
-extension SpeakersRoute: ViewRoute {
-    public func body(_ nav: RouteNavigator<SpeakersRoute>) -> some View {
-        switch self {
+public struct SpeakersModule: TypedRouteModule {
+    public init() {}
+
+    public func body(for route: SpeakersRoute, nav: RouteNavigator<SpeakersRoute>) -> some View {
+        switch route {
         case .overview:
             OverviewScreen(onSpeakerTapped: { nav.push(.speakerDetails(id: $0)) })
         case let .speakerDetails(id):

@@ -7,10 +7,13 @@ import Schedule
 import Speakers
 import SwiftUI
 
-/// Route modules for features whose screens need app-provided dependencies or cross-feature
-/// destinations. Features whose routes render themselves (`ViewRoute`) need no entry here.
+/// Every feature contributes its screens as a module. Modules that need app-provided
+/// dependencies or cross-feature destinations receive them here.
 @MainActor
 let appModules: [any RouteModule] = [
+    AccountModule(),
+    MyConfModule(),
+    SpeakersModule(),
     ScheduleModule(speakerAvatarProvider: { speakerId in
         SpeakerMock.speakers
             .first { $0.id == speakerId }
