@@ -11,6 +11,8 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-02
+
 ### Added
 
 - A flow can be the content of a tab: `RootSection(id, title, icon:, flow: Checkout()) { order in … }`.
@@ -418,7 +420,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1
