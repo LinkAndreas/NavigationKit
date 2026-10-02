@@ -11,6 +11,31 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-02
+
+### Added
+
+- `Flow`: a reusable, multi-step process declared as a plain `Route` with a `start` step and a typed
+  `Result`. Start it as one unit with `nav.flow(Checkout())` (`async`, returning `Result?`) or
+  `nav.flow(Checkout()) { result in … }`. A step can run another flow and continue with its result,
+  so feature teams can publish flows that others compose. On screen, a flow is its start step, and
+  it takes its `presentation`, `requiresAuth` and `hidesTabBar` traits from it.
+- `cancelFlow()`: ends the innermost flow, unwinding its screens; the caller sees it as abandoned.
+- The ShowCase app's hackathon registration is a `Flow` that runs a reusable `ProofFlow`.
+
+### Changed
+
+- **Breaking:** every screen comes from a module. Routes no longer render themselves; move each
+  `ViewRoute.body(_:)` into a `TypedRouteModule` and list it with `.routes(…)`. See
+  [Migration](Documentation/Migration.md).
+- **Breaking:** the route-based `flow(_:as:)` and `flow(_:as:onFinish:)` are disfavored overloads, so
+  a `Flow` always resolves to its typed form.
+- `.routes(…)` documents that repeated calls add up.
+
+### Removed
+
+- **Breaking:** `ViewRoute` and `ViewRoute.preview()`. Use `route.preview(using: SomeModule())`.
+
 ## [2.4.0] - 2026-10-01
 
 ### Added
@@ -324,7 +349,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.4.0...v3.0.0
 [2.4.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.1.2...v2.2.0
