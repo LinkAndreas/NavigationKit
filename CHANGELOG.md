@@ -11,6 +11,8 @@ because each one is a published tag you can pin to.
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-02
+
 ### Added
 
 - `Remember`: the view form of `remember(for:)`. `Remember(for: .flow) { CheckoutSession() } content:
@@ -375,7 +377,8 @@ A redesign around one layout-agnostic `Navigator` and a declarative `NavigationR
   and deep links across several feature packages. The root navigator adapts to the device:
   a tab bar on iPhone, a sidebar + detail split view on iPad.
 
-[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...HEAD
+[Unreleased]: https://github.com/LinkAndreas/NavigationKit/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/LinkAndreas/NavigationKit/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/LinkAndreas/NavigationKit/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/LinkAndreas/NavigationKit/compare/v2.4.0...v3.0.0
